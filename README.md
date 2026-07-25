@@ -727,7 +727,7 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
 
 > [!NOTE]
 > **Concept Motive**: Understand the autoregressive bottleneck, master the acceptance-rejection mathematics of speculative decoding, and verify through numerical calculation that this technique delivers lossless speedup.
-
+>
 > **Prerequisites**: Chapter 1 (hardware constraints), Chapter 3 (attention mechanics).
 
 Standard language model generation is brutally slow. You sit and watch words appear one by one. This chapter fixes that problem. Here is how we bypass the hardware bottleneck using a clever algorithm called speculative decoding.
@@ -1018,7 +1018,7 @@ Speculative decoding works best for factual, low-temperature responses. In codin
 > [!NOTE]
 > **Concept Motive**: Inspect the directory layout and complete functional source code for YORD.
 
-### 11.1 Directory Architecture
+### 12.1 Directory Architecture
 
 ```
 yord-harness/
@@ -1038,7 +1038,7 @@ yord-harness/
 
 ---
 
-### 11.2 Complete C++ Tree-sitter AST Graph Parser (`ast_parser.cpp`)
+### 12.2 Complete C++ Tree-sitter AST Graph Parser (`ast_parser.cpp`)
 
 ```cpp
 #include <iostream>
@@ -1091,7 +1091,7 @@ int main() {
 
 ---
 
-### 11.3 Complete Python Adversarial NLI Critic (`nli_critic.py`)
+### 12.3 Complete Python Adversarial NLI Critic (`nli_critic.py`)
 
 ```python
 import numpy as np
@@ -1130,7 +1130,7 @@ if __name__ == "__main__":
 > [!NOTE]
 > **Concept Motive**: Learn production system troubleshooting, memory profiling, and zero-network security auditing.
 
-### 12.1 Zero-Egress Network Verification
+### 13.1 Zero-Egress Network Verification
 To verify that YORD executes 100% offline without leaking data:
 ```bash
 sudo tcpdump -i any host not 127.0.0.1
@@ -1139,7 +1139,7 @@ sudo tcpdump -i any host not 127.0.0.1
 
 ---
 
-### 12.2 RAM Profiling & Massif Audit
+### 13.2 RAM Profiling & Massif Audit
 To verify physical DRAM remains below the 2.2GB memory ceiling:
 ```bash
 valgrind --tool=massif ./bin/yord-harness
@@ -1152,7 +1152,7 @@ valgrind --tool=massif ./bin/yord-harness
 
 > [!NOTE]
 > **Concept Motive**: Execute a complete performance analysis of YORD on real consumer hardware. Learn to measure RAM utilization, calculate KV cache sizes, and understand the physics behind the latency numbers.
-
+>
 > **Prerequisites**: Chapter 1 (hardware constraints), Chapter 3 (attention), Chapter 9 (speculative decoding).
 
 Here is a hard truth about local AI. Everyone loves to show off benchmarks on $10,000 GPU clusters. We are going to do the opposite. We are going to run the entire YORD system on a five-year-old corporate laptop.
