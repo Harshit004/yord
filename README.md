@@ -157,6 +157,7 @@ $$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \math
 #### Worked Example 2.1: 2D Vector Geometry
 
 **Problem**: Given two 2D vectors $\mathbf{u} = [3, 4]^T$ and $\mathbf{v} = [4, 0]^T$:
+
 1. Calculate their $L_2$ norms.
 2. Normalize both vectors to unit length.
 3. Calculate their Cosine Similarity.
@@ -253,6 +254,7 @@ $$\text{Var}\left(\frac{y}{\sqrt{d_k}}\right) = \frac{\text{Var}(y)}{d_k} = \fra
 #### Worked Example 3.1: 2D Attention Calculation
 
 **Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys $K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}$, and values $V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}$ with $d_k = 2$:
+
 1. Compute raw dot products $\mathbf{q} K^T$.
 2. Divide by $\sqrt{d_k} = \sqrt{2} \approx 1.414$.
 3. Compute Softmax weights.
@@ -594,6 +596,7 @@ If a user asks: *"Why is the speed of light 500 meters per second?"*, a sycophan
 To achieve non-sycophantic evaluation, YORD decouples verification from text generation. It uses a **Natural Language Inference (NLI) Cross-Encoder** model (`bge-reranker-small`).
 
 The NLI model takes a **Premise ($P$)** and a **Hypothesis ($H$)** as a joint input pair $[P, H]$ and outputs raw unnormalized logits for three classes:
+
 - **Entailment ($z_E$)**: Premise proves Hypothesis.
 - **Neutral ($z_N$)**: Premise is unrelated to Hypothesis.
 - **Contradiction ($z_C$)**: Premise disproves Hypothesis.
@@ -739,6 +742,7 @@ Language models are autoregressive. They predict the next token, append it to th
 The CPU must load the full model weight matrix from RAM into its processor cache for every single token. Memory bandwidth is the physical limit on how fast data moves from RAM to the CPU. The CPU spends most of its time sitting idle waiting for memory reads. Computer scientists call this the Von Neumann bottleneck.
 
 Let's calculate the theoretical maximum speed. We will use a standard Intel i5 laptop with DDR4-2400 RAM.
+
 * Peak memory bandwidth: 38 GB/s
 * Qwen2.5-1.5B model size (4-bit quantized): 0.7 GB
 
@@ -763,6 +767,7 @@ We can cheat the system using a two-step process. First, we use a tiny, fast mod
 > The key insight: verifying $K$ tokens simultaneously costs the exact same as generating 1 token. A model processes an entire batch of input tokens in a single forward pass.
 
 Here is the process in plain English:
+
 1. A small draft model (like Qwen2.5-0.5B at 350 MB) quickly generates $K$ candidate tokens.
 2. The full target model (Qwen2.5-1.5B) reads all $K$ tokens at once.
 3. The target model verifies which tokens it agrees with.
@@ -817,6 +822,7 @@ We draw a uniform random number $u \sim U(0,1)$.
 **Case 2: Reject.** If $u = 0.75$, this is greater than 0.6. We reject token A. We must resample.
 
 Let's calculate the rejection resampling distribution using $q(x) - p(x)$.
+
 * Token A: $\max(0, 0.3 - 0.5) = 0$
 * Token B: $\max(0, 0.4 - 0.3) = 0.1$
 * Token C: $\max(0, 0.2 - 0.15) = 0.05$
@@ -865,6 +871,7 @@ Does this fit in our constraints? Yes. On an Intel i5 8GB system, the OS leaves 
 
 Our net effective generation speed jumps by about 1.7x. The baseline 15 tokens/sec becomes 25 tokens/sec. 
 Let's revisit our latency calculations for generating a 200-token response.
+
 * Old generation time: $200 \div 15 = 13.3$ seconds.
 * New generation time: $200 \div 25 = 8.0$ seconds.
 * Time saved: 5.3 seconds per query.
@@ -945,14 +952,17 @@ Speculative decoding works best for factual, low-temperature responses. In codin
 ### Exercises
 
 **Tier 1: Intuition**
+
 1. Why does the target model process $K$ tokens faster than generating $K$ tokens autoregressively?
 2. If the draft model is completely random and terrible, does speculative decoding produce worse text than the target model alone? Why or why not?
 
 **Tier 2: Calculation**
+
 3. Given a cost ratio $c_{draft}/c_{target} = 0.15$ and draft length $K=4$. What minimum average acceptance rate ($\alpha$) is required to achieve a speedup > 1.0?
 4. A draft model assigns probabilities $p = \{0.6, 0.2, 0.2\}$ to three tokens. The target model assigns $q = \{0.3, 0.5, 0.2\}$. The draft selects token 1. Calculate the probability of rejection, and derive the exact normalized resampling distribution.
 
 **Tier 3: Systems Implementation**
+
 5. Modify the reference Python code to implement a dynamic $K$. If all tokens are accepted, increase $K$ by 1. If a token is rejected before position $K/2$, decrease $K$ by 1.
 6. The target model consumes 700 MB of RAM. The draft model consumes 350 MB. The KV cache takes 28,672 bytes per token. Calculate the total memory footprint during a speculative decoding step with a 1,000-token prompt and $K=5$.
 
@@ -1187,6 +1197,7 @@ Here is the process-by-process memory inventory when the system is idling.
 You might be wondering where the 12 million tokens live. They are on the SSD. We use Qdrant in memory-mapped mode. The operating system pages data into RAM only when needed.
 
 Let's calculate the on-disk footprint. We have 24,000 chunks.
+
 - **Vectors**: $24,000 \times 256 \text{ bytes/vector} = 6.1 \text{ MB}$
 - **HNSW Graph**: $24,000 \text{ nodes} \times 32 \text{ edges} \times 4 \text{ bytes} = 3.1 \text{ MB}$
 - **Payloads**: $24,000 \times 2,000 \text{ bytes of text} = 48.0 \text{ MB}$
@@ -1254,6 +1265,7 @@ The system immediately flags a `CONTEXT_MISS` exception.
 > YORD Core Principle #1 is Zero Network Egress. The system will never reach out to the internet without explicit user permission.
 
 When a context miss occurs, the system pauses and presents four options to the user:
+
 1. **Force Answer**: Attempt to answer using the low-confidence context anyway.
 2. **Authorize Web Search**: Grant temporary permission for a targeted internet search.
 3. **Manual Injection**: The user provides a URL or file path manually.
@@ -1307,19 +1319,23 @@ In Chapter 9, we discussed speculative decoding. Does it help here? Yes, but mod
 Speculative decoding primarily speeds up the autoregressive generation phase. In our system, generation takes 13.3 seconds at 15 tokens per second. With the Qwen2.5-0.5B draft model, we boost this to 25 tokens per second. The generation time drops from 13.3 seconds to 8.0 seconds.
 
 This reduces the Case 1 total time from 103 seconds down to 97.7 seconds. On a single query, this feels marginal. However, if you are batch processing hundreds of queries overnight, saving 5.3 seconds per query adds up to a massive win:
+
 - 500 queries $\times$ 5.3 seconds = 2,650 seconds = **44 minutes saved per batch run.**
 
 ### Exercises
 
 **Tier 1: Intuition**
+
 1. Why does the LLM Prefill phase take 85 seconds while the Generation phase only takes 13.3 seconds, even though Generation produces text that the user actually sees?
 2. If we upgraded this laptop to DDR5-4800 RAM, which specific step in the Case 1 execution trace would see the most improvement?
 
 **Tier 2: Calculation**
+
 3. Calculate the KV cache size for a model with 32 layers, 4 KV heads, and a head dimension of 64, using FP16 precision, given a prompt of 4,000 tokens.
 4. If a user runs 500 queries in a batch, and 20% of them result in a Case 2 Web Search, what is the total execution time in hours? Assume speculative decoding is enabled.
 
 **Tier 3: Systems Implementation**
+
 5. Write a Python function `check_context_miss(scores, threshold=0.55)` that takes a list of cross-encoder scores and returns an Enum indicating whether to proceed or trigger the fallback menu.
 6. The `Qdrant upsert` takes 100 ms for 250 chunks. Write a Bash command using `curl` to insert a single JSON payload into a local Qdrant instance running on port 6333 to test network overhead.
 
