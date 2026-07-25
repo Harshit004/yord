@@ -1,4 +1,4 @@
-# YORDBOOK: Manual to the 12M-Token Pure-Local Autonomous Research Harness YORD
+# YORDBOOK: Master Manual to the 12M-Token Pure-Local Autonomous Research Harness YORD
 ## Definitive Systems Architecture, Mathematical Foundations, and Reverse-Engineering Manual
 
 ---
@@ -358,7 +358,7 @@ When the HNSW search algorithm accesses a vector address not currently loaded in
 
 #### Worked Example 4.1: Page Fault Calculation
 
-**Problem**: A cold vector query traverses $50$ graph nodes, triggering $50$ random SSD page faults. NVMe random read latency is $100 \text{ \mu s}$ ($0.1 \text{ ms}$). Calculate total query latency.
+**Problem**: A cold vector query traverses $50$ graph nodes, triggering $50$ random SSD page faults. NVMe random read latency is $100\,\mu\text{s}$ ($0.1\text{ ms}$). Calculate total query latency.
 
 **Solution**:
 
@@ -1194,7 +1194,7 @@ Let's calculate the on-disk footprint. We have 24,000 chunks.
 
 ## 14.2 Case 1: Complete Execution Trace (Context Hit)
 
-Let's trace a query where the answer exists in our local 12M token context. We will break down the exact latencies. 
+Let me trace a query where the answer exists in our local 12M token context. We will break down the exact latencies. 
 
 | Step | Operation | Latency |
 | :--- | :--- | :--- |
@@ -1357,5 +1357,4 @@ This reduces the Case 1 total time from 103 seconds down to 97.7 seconds. On a s
 - **$\sqrt{d_k}$**: Scaling factor normalizing dot product attention variance to 1.0.
 
 ---
-*End of YORDBOOK Master Pedagogical Textbook.*
-```
+*End of YORDBOOK*
