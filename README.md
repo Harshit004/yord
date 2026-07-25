@@ -1,4 +1,4 @@
-# YORDBOOK: The 12M-Token Pure-Local Autonomous Research Harness
+# YORDBOOK: Manual to the 12M-Token Pure-Local Autonomous Research Harness YORD
 ## Definitive Systems Architecture, Mathematical Foundations, and Reverse-Engineering Manual
 
 ---
