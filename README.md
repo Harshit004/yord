@@ -28,7 +28,7 @@
 
 ### 1.1 The Motivating Problem: Why Local AI Hits a Memory Wall
 
-Consider a researcher studying nanomaterial synthesis or auditing a 100,000-line codebase. The dataset contains 12,000,000 text tokens (roughly 48 megabytes of raw text). 
+Consider a researcher studying nanomaterial synthesis or auditing a 100,000-line codebase. The dataset contains 12,000,000 text tokens (roughly 48 megabytes of raw text).
 
 If we attempt to feed all 12 million tokens directly into a modern Large Language Model (LLM) using standard Dense Attention, the system crashes immediately. Why?
 
@@ -88,16 +88,20 @@ To make deep research accessible to students and researchers without expensive c
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does doubling the input context length quadruples the memory required for dense self-attention?
    - *Answer Key*: Dense attention computes an $N \times N$ matrix. If $N \to 2N$, $(2N)^2 = 4N^2$, which requires $4 \times$ the memory.
 
 #### Level 2: Calculation
+
 2. **Question**: Calculate the memory required for a dense attention matrix with $N = 100,000$ tokens using 4-byte `fp32` floats.
    - *Answer Key*: $100,000^2 = 10^{10}$ elements. $10^{10} \times 4 \text{ bytes} = 40,000,000,000 \text{ bytes} = 40 \text{ GB}$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python function to estimate DRAM token generation speed given model size (in GB) and DRAM bandwidth (in GB/s).
    - *Answer Key*:
+
      ```python
      def max_token_speed(model_size_gb: float, dram_bw_gbs: float) -> float:
          return dram_bw_gbs / model_size_gb
@@ -155,6 +159,7 @@ $$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \math
 #### Worked Example 2.1: 2D Vector Geometry
 
 **Problem**: Given two 2D vectors $\mathbf{u} = [3, 4]^T$ and $\mathbf{v} = [4, 0]^T$:
+
 1. Calculate their $L_2$ norms.
 2. Normalize both vectors to unit length.
 3. Calculate their Cosine Similarity.
@@ -178,16 +183,20 @@ $$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \math
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does unit-normalizing vectors allow us to replace slow Cosine Similarity formulas with fast dot products?
    - *Answer Key*: Because when $\|\mathbf{u}\|_2 = \|\mathbf{v}\|_2 = 1.0$, the denominator in $\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$ becomes $1.0$, leaving just $\mathbf{u} \cdot \mathbf{v}$.
 
 #### Level 2: Calculation
+
 2. **Question**: Compute the dot product of $\mathbf{a} = [0.6, 0.8]^T$ and $\mathbf{b} = [0.8, -0.6]^T$. Are they orthogonal?
    - *Answer Key*: $\mathbf{a} \cdot \mathbf{b} = (0.6 \times 0.8) + (0.8 \times -0.6) = 0.48 - 0.48 = 0.0$. Yes, they are orthogonal ($90^\circ$).
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a C++ function to compute the unit normalization of a 768-element `std::vector<float>` in-place.
    - *Answer Key*:
+
      ```cpp
      #include <vector>
      #include <cmath>
@@ -224,7 +233,7 @@ $$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right
 
 ### 3.2 Derivation of the $\sqrt{d_k}$ Variance Scaling Factor
 
-Why do we divide $Q K^T$ by $\sqrt{d_k}$? 
+Why do we divide $Q K^T$ by $\sqrt{d_k}$?
 
 Let $q_i$ and $k_i$ be independent random variables with zero mean ($\mathbb{E}[q_i] = \mathbb{E}[k_i] = 0$) and unit variance ($\text{Var}(q_i) = \text{Var}(k_i) = 1.0$).
 
@@ -251,6 +260,7 @@ $$\text{Var}\left(\frac{y}{\sqrt{d_k}}\right) = \frac{\text{Var}(y)}{d_k} = \fra
 #### Worked Example 3.1: 2D Attention Calculation
 
 **Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys $K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}$, and values $V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}$ with $d_k = 2$:
+
 1. Compute raw dot products $\mathbf{q} K^T$.
 2. Divide by $\sqrt{d_k} = \sqrt{2} \approx 1.414$.
 3. Compute Softmax weights.
@@ -291,16 +301,20 @@ This guarantees $O(\log N)$ query time complexity.
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does Softmax produce nearly zero gradients when input values are extremely large?
    - *Answer Key*: Because for large inputs $z$, $e^z$ dominates, making one weight $\approx 1.0$ and others $\approx 0.0$. The derivative of Softmax in saturated regions approaches zero.
 
 #### Level 2: Calculation
+
 2. **Question**: If $d_k = 64$, what scaling factor should be used to normalize dot product variance?
    - *Answer Key*: $\sqrt{d_k} = \sqrt{64} = 8.0$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Implement a Python function that computes Softmax with numerical stability (subtracting $\max(z)$).
    - *Answer Key*:
+
      ```python
      import numpy as np
 
@@ -322,11 +336,11 @@ When a vector database stores 12,000,000 vectors of dimension $768$ (`fp32`), th
 
 $$12,000,000 \times 768 \times 4 \text{ bytes} \approx 36.86 \text{ Gigabytes}$$
 
-An 8GB RAM machine cannot hold $36.86 \text{ GB}$ in DRAM. 
+An 8GB RAM machine cannot hold $36.86 \text{ GB}$ in DRAM.
 
 Instead of loading vectors into RAM, Qdrant uses the OS system call `mmap()`. This maps the 36.86 GB file on the SSD directly into the process's virtual address space.
 
-```
+```text
 +-------------------------------------------------------+
 |            Virtual Memory Address Space               |
 +-------------------------------------------------------+
@@ -369,18 +383,22 @@ A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction whil
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does `mmap` prevent application crashes when opening files larger than system physical RAM?
    - *Answer Key*: `mmap` assigns virtual memory addresses without allocating physical DRAM up front. Data is loaded on-demand in 4KB pages.
 
 #### Level 2: Calculation
+
 2. **Question**: Given virtual address $V = 18,442$ bytes and page size $4,096$ bytes, find the Virtual Page Number (VPN) and Offset.
    - *Answer Key*:
      $$\text{VPN} = \lfloor 18442 / 4096 \rfloor = 4$$
      $$\text{Offset} = 18442 \bmod 4096 = 2058 \text{ bytes}$$
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write C code using `mmap()` to map a file read-only.
    - *Answer Key*:
+
      ```c
      #include <sys/mman.h>
      #include <fcntl.h>
@@ -413,6 +431,7 @@ Nodes represent syntactic constructs (`FunctionDefinition`, `IfStatement`, `Vari
 A graph $G = (V, E)$ with $|V|$ nodes is represented by a binary **Adjacency Matrix** $A \in \{0, 1\}^{|V| \times |V|}$, where $A_{ij} = 1$ if a directed edge exists from node $i$ to node $j$.
 
 #### Theorem: $n$-Hop Path Counts
+
 The $(i, j)$-th entry of the matrix power $A^n$ equals the exact number of directed paths of length $n$ from node $i$ to node $j$.
 
 #### Worked Example 5.1: 3-Hop Matrix Paths
@@ -448,16 +467,20 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why is structural AST filtering faster than vector similarity search for code symbol lookups?
    - *Answer Key*: AST lookup is an $O(1)$ matrix/hash table access, whereas vector search requires high-dimensional distance math.
 
 #### Level 2: Calculation
+
 2. **Question**: Given $A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$, calculate $A^2$. What does it mean?
    - *Answer Key*: $A^2 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$. Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python function using `tree_sitter` to extract all function names from Python code.
    - *Answer Key*:
+
      ```python
      def get_function_names(node):
          names = []
@@ -481,7 +504,7 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 
 Multi-agent coordination in YORD is managed by a deterministic **LangGraph State Machine** operating over a shared in-memory JSON state bus.
 
-```
+```text
        +------------------+
        |  User Research   |
        |      Query       |
@@ -539,7 +562,8 @@ Multi-agent coordination in YORD is managed by a deterministic **LangGraph State
 
 Local micro-models can produce malformed JSON if unconstrained. YORD uses **GGML Backus-Naur Form (GBNF)** grammars to enforce strict schema adherence at the token level during decoding.
 
-#### Example GBNF Grammar:
+#### Example GBNF Grammar
+
 ```gbnf
 root ::= "{" ws "\"hypothesis\":" ws string "," ws "\"confidence\":" ws number "}"
 string ::= "\"" [a-zA-Z0-9 ]* "\""
@@ -552,18 +576,22 @@ ws ::= [ \t\n]*
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does enforcing GBNF grammars at the token decoding level eliminate JSON parsing errors?
    - *Answer Key*: GBNF masks invalid tokens during sampling, making it physically impossible for the LLM to output syntax-breaking characters.
 
 #### Level 2: Calculation
+
 2. **Question**: If a prompt context limit is $16,384$ tokens, system prompt uses $1,200$ tokens, output space uses $800$ tokens, and each retrieved document chunk is $400$ tokens, calculate the max chunk capacity.
    - *Answer Key*:
      $$\text{Remaining Space} = 16,384 - (1,200 + 800) = 14,384 \text{ tokens}$$
      $$\text{Max Chunks} = \lfloor 14,384 / 400 \rfloor = 35 \text{ chunks}$$
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python LangGraph node that updates a shared state dictionary.
    - *Answer Key*:
+
      ```python
      def synthesizer_node(state: dict) -> dict:
          hypothesis = "Generated answer based on context..."
@@ -583,7 +611,7 @@ ws ::= [ \t\n]*
 
 Generative LLMs fine-tuned with Reinforcement Learning from Human Feedback (RLHF) tend to agree with user premises, even when those premises are false.
 
-If a user asks: *"Why is the speed of light 500 meters per second?"*, a sycophantic model often responds: *"The speed of light is 500 m/s because..."* rather than correcting the error.
+If a user asks a question built on a false premise (for example, an incorrect numeric value for a physical constant), a sycophantic model often affirms the false premise rather than correcting the error.
 
 ---
 
@@ -592,6 +620,7 @@ If a user asks: *"Why is the speed of light 500 meters per second?"*, a sycophan
 To achieve non-sycophantic evaluation, YORD decouples verification from text generation. It uses a **Natural Language Inference (NLI) Cross-Encoder** model (`bge-reranker-small`).
 
 The NLI model takes a **Premise ($P$)** and a **Hypothesis ($H$)** as a joint input pair $[P, H]$ and outputs raw unnormalized logits for three classes:
+
 - **Entailment ($z_E$)**: Premise proves Hypothesis.
 - **Neutral ($z_N$)**: Premise is unrelated to Hypothesis.
 - **Contradiction ($z_C$)**: Premise disproves Hypothesis.
@@ -625,16 +654,20 @@ $$P(\text{Contradiction}) = \frac{e^{z_C}}{e^{z_E} + e^{z_N} + e^{z_C}}$$
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does joint cross-encoder attention $[P, H]$ produce more accurate contradiction scores than dual bi-encoder vectors?
    - *Answer Key*: Cross-encoders compute token-level cross-attention between every word in the premise and hypothesis simultaneously.
 
 #### Level 2: Calculation
+
 2. **Question**: If $z_E = 2.0$, $z_N = 2.0$, $z_C = 2.0$, what are the class probabilities?
    - *Answer Key*: All logits are equal, so $P(E) = P(N) = P(C) = 1/3 \approx 33.33\%$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python script running `onnxruntime` to score an NLI premise-hypothesis pair.
    - *Answer Key*:
+
      ```python
      import numpy as np
      import onnxruntime as ort
@@ -695,16 +728,20 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: What does Born's Rule state regarding complex amplitudes $c_k$ and measurement probabilities $P(k)$?
    - *Answer Key*: Born's Rule states that the probability of observing basis state $|k\rangle$ equals the squared magnitude of its complex coefficient ($P(k) = |c_k|^2$).
 
 #### Level 2: Calculation
+
 2. **Question**: If $|\psi\rangle = 0.6|0\rangle + 0.8|1\rangle$, verify that total probability equals $1.0$.
    - *Answer Key*: $P(0) = |0.6|^2 = 0.36$, $P(1) = |0.8|^2 = 0.64$. Total = $0.36 + 0.64 = 1.0$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write C++ code to compute the Kronecker tensor product of two 2D vectors.
    - *Answer Key*:
+
      ```cpp
      #include <vector>
 
@@ -727,26 +764,31 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
 > **Concept motive**: Observe how the YORD architecture resolves real-world research problems across materials science, biochemistry, software engineering, business intelligence, and legal analysis.
 
 ### Case Study 1: Nanomaterial Synthesis Phase Boundaries
+
 - **Problem**: Synthesizing titanium dioxide ($\text{TiO}_2$) nanoparticles requires precise temperature control to avoid phase transitions from Anatase to Rutile.
 - **YORD Execution**:
   1. Ingestion Agent fetches 1,400 PDF research papers into Qdrant mmap.
-  2. Synthesizer proposes: *"Anatase converts to Rutile at $400^\circ\text{C}$."*
-  3. Critic NLI evaluates paper passage: *"Rutile transition occurs above $600^\circ\text{C}$."*
+  2. Synthesizer proposes a candidate transition temperature.
+  3. Critic NLI evaluates the claim against the source passage and finds a contradiction with the documented transition temperature.
   4. NLI outputs $P(\text{Contradiction}) = 94.2\%$. Claim rejected. Corrected boundary saved to memory.
 
 ### Case Study 2: Intrinsically Disordered Protein (IDP) Folding
+
 - **Problem**: IDP proteins lack fixed 3D structures, confusing standard folding models.
 - **YORD Execution**: Graphify AST parses amino acid sequence residue dependencies, filtering out invalid rigid-body structural assumptions.
 
 ### Case Study 3: Codebase Security Dependency Audits
+
 - **Problem**: Auditing a C++ library for memory leak vulnerabilities.
 - **YORD Execution**: Tree-sitter AST parser traces `malloc`/`free` call graph reachability. Matrix power $A^k$ identifies un-freed heap allocations in 180ms.
 
 ### Case Study 4: Market Competitor Intelligence Mining
+
 - **Problem**: Tracking pricing shifts across 50 competitor websites offline.
 - **YORD Execution**: Tier 1 CLI scraper extracts table metrics; micro-LLM summarizes changes under strict GBNF JSON constraints.
 
 ### Case Study 5: Legal Contract Regulatory Compliance
+
 - **Problem**: Detecting indemnification clause conflicts in a 200-page commercial lease.
 - **YORD Execution**: Decoupled NLI cross-encoder compares lease clauses against statutory liability limits, identifying 3 direct compliance violations.
 
@@ -761,9 +803,9 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
 | :--- | :--- | :--- | :--- | :--- |
 | **Generative LLM** | Qwen2.5-1.5B (`q4_k_m`) | **700 MB RAM** | Llama-3.1-8B (`fp16`) | Exceeds 8GB RAM ceiling (requires 16GB) |
 | **Vector Engine** | Qdrant (Rust mmap) | **5ms latency** | ChromaDB (Python) | High DRAM overhead (loads full index to RAM) |
-| **Verification Engine**| ONNX NLI (`bge-reranker`) | **20ms NLI score**| LLM Self-Prompting | Sycophantic bias & slow (2,000ms) |
+| **Verification Engine** | ONNX NLI (`bge-reranker`) | **20ms NLI score** | LLM Self-Prompting | Sycophantic bias & slow (2,000ms) |
 | **Parser Engine** | Tree-sitter C++ AST | **<300ms parse** | Regex Line Matching | Fails on multi-line code constructs |
-| **Consensus Engine**| 3-Qubit Quantum Matrix | **$8 \times 8$ matrix** | Naive Majority Vote | Flawed under equal tie conditions |
+| **Consensus Engine** | 3-Qubit Quantum Matrix | **$8 \times 8$ matrix** | Naive Majority Vote | Flawed under equal tie conditions |
 
 ---
 
@@ -774,7 +816,7 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
 
 ### 11.1 Directory Architecture
 
-```
+```text
 yord-harness/
 ├── bin/
 │   ├── llama-cli
@@ -861,7 +903,7 @@ class AdversarialCritic:
     def evaluate_claim(self, premise: str, hypothesis: str, mock_logits: np.ndarray) -> dict:
         probs = softmax(mock_logits)
         prob_entail, prob_neutral, prob_contradict = probs[0], probs[1], probs[2]
-        
+
         is_rejected = prob_contradict > self.threshold
         return {
             "entailment": float(prob_entail),
@@ -872,7 +914,7 @@ class AdversarialCritic:
 
 if __name__ == "__main__":
     critic = AdversarialCritic(rejection_threshold=0.65)
-    sample_logits = np.array([1.2, 0.4, 3.8]) # High contradiction logit
+    sample_logits = np.array([1.2, 0.4, 3.8])  # High contradiction logit
     res = critic.evaluate_claim("Passage context...", "False hypothesis...", sample_logits)
     print("Critic Decision:", res)
 ```
@@ -885,19 +927,25 @@ if __name__ == "__main__":
 > **Concept motive**: Learn production system troubleshooting, memory profiling, and zero-network security auditing.
 
 ### 12.1 Zero-Egress Network Verification
+
 To verify that YORD executes 100% offline without leaking data:
+
 ```bash
 sudo tcpdump -i any host not 127.0.0.1
 ```
+
 *Expected Output*: 0 non-loopback packets captured.
 
 ---
 
 ### 12.2 RAM Profiling & Massif Audit
+
 To verify physical DRAM remains below the 2.2GB memory ceiling:
+
 ```bash
 valgrind --tool=massif ./bin/yord-harness
 ```
+
 *Expected Peak Memory*: $< 2,200 \text{ MB}$.
 
 ---
@@ -916,4 +964,3 @@ valgrind --tool=massif ./bin/yord-harness
 - **$\sqrt{d_k}$**: Scaling factor normalizing dot product attention variance to 1.0.
 
 ---
-*End of YORD Master Pedagogical Textbook.*
