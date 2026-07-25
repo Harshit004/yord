@@ -128,15 +128,15 @@ For example, the model BGE-M3 maps any sentence into a $d = 768$ dimensional vec
 
 To measure the length of a vector $\mathbf{v} \in \mathbb{R}^d$, we use the **Euclidean ($L_2$) Norm**:
 
-$$\|\mathbf{v}\|_2 = \sqrt{\sum_{i=1}^d v_i^2}$$
+$$\\|\mathbf{v}\\|_2 = \sqrt{\sum_{i=1}^d v_i^2}$$
 
 A vector is **unit-normalized** when its length equals $1.0$:
 
-$$\hat{\mathbf{v}} = \frac{\mathbf{v}}{\|\mathbf{v}\|_2}$$
+$$\hat{\mathbf{v}} = \frac{\mathbf{v}}{\\|\mathbf{v}\\|_2}$$
 
 The **dot product** (inner product) between two vectors $\mathbf{u}$ and $\mathbf{v}$ measures their geometric alignment:
 
-$$\mathbf{u} \cdot \mathbf{v} = \sum_{i=1}^d u_i v_i = \|\mathbf{u}\|_2 \|\mathbf{v}\|_2 \cos(\theta)$$
+$$\mathbf{u} \cdot \mathbf{v} = \sum_{i=1}^d u_i v_i = \\|\mathbf{u}\\|_2 \\|\mathbf{v}\\|_2 \cos(\theta)$$
 
 where $\theta$ is the angle between the two vectors.
 
@@ -146,14 +146,14 @@ where $\theta$ is the angle between the two vectors.
 
 The **Cosine Similarity** measures the angle between two concepts regardless of magnitude:
 
-$$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \cos(\theta)$$
+$$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\\|\mathbf{u}\\|_2 \\|\mathbf{v}\\|_2} = \cos(\theta)$$
 
 - If $\cos(\theta) = 1.0$, the vectors point in the exact same direction (identical meaning).
 - If $\cos(\theta) = 0.0$, the vectors are orthogonal (unrelated).
 - If $\cos(\theta) = -1.0$, the vectors point in opposite directions.
 
 > [!TIP]
-> **Mathematical Shortcut**: When vectors are unit-normalized ($\|\hat{\mathbf{u}}\|_2 = \|\hat{\mathbf{v}}\|_2 = 1.0$), Cosine Similarity equals the simple dot product:
+> **Mathematical Shortcut**: When vectors are unit-normalized ($\\|\hat{\mathbf{u}}\\|_2 = \\|\hat{\mathbf{v}}\\|_2 = 1.0$), Cosine Similarity equals the simple dot product:
 > $$\text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}$$
 
 #### Worked Example 2.1: 2D Vector Geometry
@@ -167,8 +167,8 @@ $$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \math
 **Step-by-Step Solution**:
 
 1. Calculate Norms:
-   $$\|\mathbf{u}\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0$$
-   $$\|\mathbf{v}\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0$$
+   $$\\|\mathbf{u}\\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0$$
+   $$\\|\mathbf{v}\\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0$$
 
 2. Unit Normalization:
    $$\hat{\mathbf{u}} = \left[\frac{3}{5}, \frac{4}{5}\right]^T = [0.6, 0.8]^T$$
@@ -185,7 +185,7 @@ $$\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \math
 #### Level 1: Intuition
 
 1. **Question**: Why does unit-normalizing vectors allow us to replace slow Cosine Similarity formulas with fast dot products?
-   - *Answer Key*: Because when $\|\mathbf{u}\|_2 = \|\mathbf{v}\|_2 = 1.0$, the denominator in $\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$ becomes $1.0$, leaving just $\mathbf{u} \cdot \mathbf{v}$.
+   - *Answer Key*: Because when $\\|\mathbf{u}\\|_2 = \\|\mathbf{v}\\|_2 = 1.0$, the denominator in $\frac{\mathbf{u} \cdot \mathbf{v}}{\\|\mathbf{u}\\|_2 \\|\mathbf{v}\\|_2}$ becomes $1.0$, leaving just $\mathbf{u} \cdot \mathbf{v}$.
 
 #### Level 2: Calculation
 
@@ -259,7 +259,7 @@ $$\text{Var}\left(\frac{y}{\sqrt{d_k}}\right) = \frac{\text{Var}(y)}{d_k} = \fra
 
 #### Worked Example 3.1: 2D Attention Calculation
 
-**Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys $K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}$, and values $V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}$ with $d_k = 2$:
+**Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys $K = \begin{bmatrix} 2.0 & 0.0 \\\\ 1.0 & 3.0 \end{bmatrix}$, and values $V = \begin{bmatrix} 4.0 & 1.0 \\\\ 0.0 & 2.0 \end{bmatrix}$ with $d_k = 2$:
 
 1. Compute raw dot products $\mathbf{q} K^T$.
 2. Divide by $\sqrt{d_k} = \sqrt{2} \approx 1.414$.
@@ -370,7 +370,7 @@ When the HNSW search algorithm accesses a vector address not currently loaded in
 
 #### Worked Example 4.1: Page Fault Calculation
 
-**Problem**: A cold vector query traverses $50$ graph nodes, triggering $50$ random SSD page faults. NVMe random read latency is $100 \text{ \mu s}$ ($0.1 \text{ ms}$). Calculate total query latency.
+**Problem**: A cold vector query traverses $50$ graph nodes, triggering $50$ random SSD page faults. NVMe random read latency is $100\ \mu\text{s}$ ($0.1\text{ ms}$). Calculate total query latency.
 
 **Solution**:
 
@@ -428,7 +428,7 @@ Nodes represent syntactic constructs (`FunctionDefinition`, `IfStatement`, `Vari
 
 ### 5.2 Adjacency Matrix & $n$-Hop Reachability
 
-A graph $G = (V, E)$ with $|V|$ nodes is represented by a binary **Adjacency Matrix** $A \in \{0, 1\}^{|V| \times |V|}$, where $A_{ij} = 1$ if a directed edge exists from node $i$ to node $j$.
+A graph $G = (V, E)$ with $|V|$ nodes is represented by a binary **Adjacency Matrix** $A \in \\{0, 1\\}^{|V| \times |V|}$, where $A_{ij} = 1$ if a directed edge exists from node $i$ to node $j$.
 
 #### Theorem: $n$-Hop Path Counts
 
@@ -438,18 +438,18 @@ The $(i, j)$-th entry of the matrix power $A^n$ equals the exact number of direc
 
 **Problem**: Given a 4-node function call graph with adjacency matrix:
 
-$$A = \begin{bmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+$$A = \begin{bmatrix} 0 & 1 & 0 & 0 \\\\ 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}$$
 
 Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 
 **Solution**:
 
 1. Compute $A^2$:
-   $$A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+   $$A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}$$
    Node 1 reaches Node 3 in 2 hops ($A^2_{13} = 1$).
 
 2. Compute $A^3$:
-   $$A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+   $$A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}$$
    Node 1 reaches Node 4 in 3 hops ($A^3_{14} = 1$).
 
 ---
@@ -473,8 +473,8 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 
 #### Level 2: Calculation
 
-2. **Question**: Given $A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$, calculate $A^2$. What does it mean?
-   - *Answer Key*: $A^2 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}$. Nodes reach themselves in 2 hops due to a bidirectional cycle.
+2. **Question**: Given $A = \begin{bmatrix} 0 & 1 \\\\ 1 & 0 \end{bmatrix}$, calculate $A^2$. What does it mean?
+   - *Answer Key*: $A^2 = \begin{bmatrix} 1 & 0 \\\\ 0 & 1 \end{bmatrix}$. Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
 
@@ -643,11 +643,11 @@ $$P(\text{Contradiction}) = \frac{e^{z_C}}{e^{z_E} + e^{z_N} + e^{z_C}}$$
    $$\text{Sum} = 3.320 + 1.492 + 44.701 = 49.513$$
 
 2. Compute Probabilities:
-   $$P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\%)$$
-   $$P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\%)$$
-   $$P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\%)$$
+   $$P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\\%)$$
+   $$P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\\%)$$
+   $$P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\\%)$$
 
-3. **Decision**: Since $P(C) = 90.3\% > 65\%$, the Critic rejects the hypothesis due to severe factual contradiction.
+3. **Decision**: Since $P(C) = 90.3\\% > 65\\%$, the Critic rejects the hypothesis due to severe factual contradiction.
 
 ---
 
@@ -661,7 +661,7 @@ $$P(\text{Contradiction}) = \frac{e^{z_C}}{e^{z_E} + e^{z_N} + e^{z_C}}$$
 #### Level 2: Calculation
 
 2. **Question**: If $z_E = 2.0$, $z_N = 2.0$, $z_C = 2.0$, what are the class probabilities?
-   - *Answer Key*: All logits are equal, so $P(E) = P(N) = P(C) = 1/3 \approx 33.33\%$.
+   - *Answer Key*: All logits are equal, so $P(E) = P(N) = P(C) = 1/3 \approx 33.33\\%$.
 
 #### Level 3: Systems Implementation
 
@@ -699,7 +699,7 @@ For a system of 3 competing hypotheses, the total state vector $|\Psi\rangle$ ex
 
 $$|\Psi\rangle = |\psi_1\rangle \otimes |\psi_2\rangle \otimes |\psi_3\rangle = \sum_{k=0}^7 c_k |k\rangle$$
 
-where $|k\rangle \in \{|000\rangle, |001\rangle, \dots, |111\rangle\}$ are computational basis states.
+where $|k\rangle \in \\{|000\rangle, |001\rangle, \dots, |111\rangle\\}$ are computational basis states.
 
 ---
 
@@ -770,7 +770,7 @@ $$|\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle$$
   1. Ingestion Agent fetches 1,400 PDF research papers into Qdrant mmap.
   2. Synthesizer proposes a candidate transition temperature.
   3. Critic NLI evaluates the claim against the source passage and finds a contradiction with the documented transition temperature.
-  4. NLI outputs $P(\text{Contradiction}) = 94.2\%$. Claim rejected. Corrected boundary saved to memory.
+  4. NLI outputs $P(\text{Contradiction}) = 94.2\\%$. Claim rejected. Corrected boundary saved to memory.
 
 ### Case Study 2: Intrinsically Disordered Protein (IDP) Folding
 
