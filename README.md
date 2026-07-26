@@ -168,6 +168,7 @@ $$
 
 > [!TIP]
 > **Mathematical Shortcut**: When vectors are unit-normalized ( $\|\hat{\mathbf{u}}\|_2 = \|\hat{\mathbf{v}}\|_2 = 1.0$ ), Cosine Similarity equals the simple dot product:
+> 
 > $$
 > \text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}
 > $$
@@ -183,25 +184,31 @@ $$
 **Step-by-Step Solution**:
 
 1. Calculate Norms:
+   
    $$
    \|\mathbf{u}\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0
    $$
+   
    $$
    \|\mathbf{v}\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0
    $$
 
 2. Unit Normalization:
+   
    $$
    \hat{\mathbf{u}} = \left[\frac{3}{5}, \frac{4}{5}\right]^T = [0.6, 0.8]^T
    $$
+   
    $$
    \hat{\mathbf{v}} = \left[\frac{4}{4}, \frac{0}{4}\right]^T = [1.0, 0.0]^T
    $$
 
 3. Cosine Similarity:
+   
    $$
    \text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}} = (0.6 \times 1.0) + (0.8 \times 0.0) = 0.60
    $$
+   
    $$
    \theta = \arccos(0.60) = 0.927 \text{ radians} \approx 53.13^\circ
    $$
@@ -266,19 +273,23 @@ Let $q_i$ and $k_i$ be independent random variables with zero mean ($\mathbb{E}[
 Consider their dot product $y = \mathbf{q} \cdot \mathbf{k} = \sum_{i=1}^{d_k} q_i k_i$:
 
 1. **Mean of Product**:
+   
    $$
 \mathbb{E}[q_i k_i] = \mathbb{E}[q_i] \mathbb{E}[k_i] = 0 \times 0 = 0
 $$
+   
    $$
 \mathbb{E}[y] = \sum_{i=1}^{d_k} 0 = 0
 $$
 
 2. **Variance of Product**:
+   
    $$
 \text{Var}(q_i k_i) = \mathbb{E}[q_i^2 k_i^2] - (\mathbb{E}[q_i k_i])^2 = \mathbb{E}[q_i^2] \mathbb{E}[k_i^2] - 0 = (1.0) \times (1.0) = 1.0
 $$
 
 3. **Variance of Sum**:
+   
    $$
 \text{Var}(y) = \text{Var}\left(\sum_{i=1}^{d_k} q_i k_i\right) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k
 $$
@@ -305,27 +316,33 @@ $$
 **Step-by-Step Solution**:
 
 1. Raw Dot Products:
+   
    $$
 \mathbf{q} K^T = [(1\times 2 + 2\times 0), (1\times 1 + 2\times 3)] = [2.0, 7.0]
 $$
 
 2. Scale by $\sqrt{2}$:
+   
    $$
 \mathbf{s} = \left[\frac{2.0}{1.414}, \frac{7.0}{1.414}\right] = [1.414, 4.950]
 $$
 
 3. Softmax Weights:
+   
    $$
 e^{1.414} \approx 4.112, \quad e^{4.950} \approx 141.176, \quad \text{Sum} = 145.288
 $$
+   
    $$
 w_1 = \frac{4.112}{145.288} \approx 0.028, \quad w_2 = \frac{141.176}{145.288} \approx 0.972
 $$
+   
    $$
 \mathbf{w} = [0.028, 0.972]
 $$
 
 4. Output Vector:
+   
    $$
 \mathbf{o} = 0.028 \times [4.0, 1.0] + 0.972 \times [0.0, 2.0] = [0.112, 0.028] + [0.0, 1.944] = [0.112, 1.972]
 $$
@@ -439,9 +456,11 @@ A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction whil
 #### Level 2: Calculation
 2. **Question**: Given virtual address $V = 18,442$ bytes and page size $4,096$ bytes, find the Virtual Page Number (VPN) and Offset.
    - *Answer Key*:
+     
      $$
 \text{VPN} = \lfloor 18442 / 4096 \rfloor = 4
 $$
+     
      $$
 \text{Offset} = 18442 \bmod 4096 = 2058 \text{ bytes}
 $$
@@ -496,12 +515,14 @@ Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 **Solution**:
 
 1. Compute $A^2$:
+   
    $$
 A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}
 $$
    Node 1 reaches Node 3 in 2 hops ($A^2_{13} = 1$).
 
 2. Compute $A^3$:
+   
    $$
 A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}
 $$
@@ -632,9 +653,11 @@ ws ::= [ \t\n]*
 #### Level 2: Calculation
 2. **Question**: If a prompt context limit is $16,384$ tokens, system prompt uses $1,200$ tokens, output space uses $800$ tokens, and each retrieved document chunk is $400$ tokens, calculate the max chunk capacity.
    - *Answer Key*:
+     
      $$
 \text{Remaining Space} = 16,384 - (1,200 + 800) = 14,384 \text{ tokens}
 $$
+     
      $$
 \text{Max Chunks} = \lfloor 14,384 / 400 \rfloor = 35 \text{ chunks}
 $$
@@ -691,20 +714,25 @@ $$
 **Solution**:
 
 1. Compute Exponentials:
+   
    $$
 e^{1.2} \approx 3.320, \quad e^{0.4} \approx 1.492, \quad e^{3.8} \approx 44.701
 $$
+   
    $$
 \text{Sum} = 3.320 + 1.492 + 44.701 = 49.513
 $$
 
 2. Compute Probabilities:
+   
    $$
 P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\%)
 $$
+   
    $$
 P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\%)
 $$
+   
    $$
 P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\%)
 $$
@@ -782,15 +810,19 @@ The system selects state $k^* = \arg\max_k P(k)$ as the final consensus answer.
 **Problem**: Hypothesis $H_1$ has confidence score $S_1 = 0.50$. Find polar angle $\theta_1$ and amplitude coefficients.
 
 **Solution**:
+
 $$
 \theta_1 = \pi \times 0.50 = \frac{\pi}{2} \quad (90^\circ)
 $$
+
 $$
 \frac{\theta_1}{2} = 45^\circ
 $$
+
 $$
 \alpha = \cos(45^\circ) = \frac{1}{\sqrt{2}} \approx 0.7071, \quad \beta = \sin(45^\circ) = \frac{1}{\sqrt{2}} \approx 0.7071
 $$
+
 $$
 |\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle
 $$
@@ -882,6 +914,7 @@ We need a mathematically rigorous way to accept or reject tokens. Let $M_p$ be t
 The target model processes the draft sequence in one forward pass. It computes its own probabilities for each position: $q(x_1), q(x_2), ..., q(x_K)$. 
 
 For each token $x_i$ in sequence, we accept it with a specific probability.
+
 $$
 P(\text{accept } x_i) = \min\left(1, \frac{q(x_i)}{p(x_i)}\right)
 $$
@@ -893,6 +926,7 @@ If $q(x_i) < p(x_i)$, we accept it randomly with probability $q(x_i)/p(x_i)$.
 > If a token is rejected at position $i$, we discard it and all subsequent tokens. We must then resample a replacement token $x'_i$ from an adjusted distribution.
 
 The adjusted resampling distribution subtracts the draft probability from the target probability, clamping at zero:
+
 $$
 P(x'_i = x) = \frac{\max(0, q(x) - p(x))}{\sum_y \max(0, q(y) - p(y))}
 $$
@@ -901,6 +935,7 @@ $$
 
 Speculative decoding guarantees the output matches the target model exactly. It is mathematically lossless. 
 The probability of outputting a specific token $x$ is the sum of two events. The token is drafted and accepted, or the token is rejected and resampled.
+
 $$
 P(\text{output } x) = p(x) \min\left(1, \frac{q(x)}{p(x)}\right) + P(\text{reject}) \cdot P(\text{resample } x)
 $$
@@ -908,6 +943,7 @@ $$
 We know $P(\text{reject}) = \sum_y p(y) \max(0, 1 - \frac{q(y)}{p(y)}) = \sum_y \max(0, p(y) - q(y))$.
 It is a known mathematical property that $\sum_y \max(0, p(y) - q(y)) = \sum_y \max(0, q(y) - p(y))$. 
 This cancels the denominator in the resampling distribution. The equation simplifies perfectly:
+
 $$
 P(\text{output } x) = \min(p(x), q(x)) + \max(0, q(x) - p(x)) = q(x)
 $$
@@ -921,6 +957,7 @@ The draft model samples from this distribution and selects token **A**.
 
 The target model evaluates the context and outputs: $q(A)=0.3, q(B)=0.4, q(C)=0.2, q(D)=0.1$.
 We calculate the acceptance ratio for token A.
+
 $$
 \text{Ratio} = \min\left(1, \frac{0.3}{0.5}\right) = \min(1, 0.6) = 0.6
 $$
@@ -949,11 +986,13 @@ The new distribution is $A=0, B=0.5, C=0.25, D=0.25$. We sample our replacement 
 The speedup depends heavily on how often the target model agrees with the draft model. Let $\alpha$ be the average acceptance rate across tokens. Let $K$ be the number of draft tokens per round.
 
 The expected number of accepted tokens per speculation round is a geometric series.
+
 $$
 E[\text{accepted}] = \frac{1 - \alpha^{K+1}}{1 - \alpha}
 $$
 
 The speedup ratio compares the tokens gained to the computational cost. Let $c_{draft}$ and $c_{target}$ be the time cost of a single forward pass for the draft and target models respectively.
+
 $$
 \text{Speedup} = \frac{E[\text{accepted}]}{1 + \frac{c_{draft}}{c_{target}} \cdot K}
 $$
@@ -963,16 +1002,19 @@ $$
 Assume an acceptance rate $\alpha = 0.7$, draft length $K = 5$, and a cost ratio $c_{draft}/c_{target} = 0.3$.
 
 **Step 1.** Calculate expected accepted tokens per round.
+
 $$
 E[\text{accepted}] = \frac{1 - 0.7^6}{1 - 0.7} = \frac{1 - 0.1176}{0.3} = 2.94 \text{ tokens}
 $$
 
 **Step 2.** Calculate the speedup ratio.
+
 $$
 \text{Speedup} = \frac{2.94}{1 + (0.3 \cdot 5)} = \frac{2.94}{2.5} = 1.176\text{x}
 $$
 
 A 1.17x speedup seems modest. But when memory bandwidth dominates (as it does on our i5), the cost ratio drops. If $c_{draft}/c_{target} = 0.1$, the speedup jumps to:
+
 $$
 \text{Speedup} = \frac{2.94}{1 + (0.1 \cdot 5)} = \frac{2.94}{1.5} = 1.96\text{x}
 $$
@@ -1361,6 +1403,7 @@ Time (s) | RAM (MB) | Activity
 We need to store Key and Value tensors for every token. Let $L$ be the number of layers (28). Let $h_{kv}$ be the number of KV heads (2, due to GQA). Let $d_h$ be the head dimension (128). We use FP16 precision, so each parameter is 2 bytes.
 
 The formula for bytes per token is:
+
 $$
 \text{Bytes per token} = 2 \times L \times h_{kv} \times d_h \times 2
 $$
@@ -1368,11 +1411,13 @@ $$
 The first 2 accounts for both Keys and Values. The final 2 accounts for the FP16 bytes.
 
 Let's plug in the numbers:
+
 $$
 \text{Bytes per token} = 2 \times 28 \times 2 \times 128 \times 2 = 28,672 \text{ bytes/token}
 $$
 
 For our 3,400 token prompt context, the total size is:
+
 $$
 \text{Total KV Cache} = 3,400 \times 28,672 = 97,484,800 \text{ bytes} \approx 97.5 \text{ MB}
 $$
