@@ -620,8 +620,7 @@ start
 repeat
   :Critic Agent\n(NLI + AST Graph Verification);
 backward:Counter-Query Loop;
-repeat while (Evaluation) is (Rejected)
--> Approved;
+repeat while (Evaluation) is (Rejected) not (Approved)
 :Distiller Agent\n(Persist to Memory);
 stop
 @enduml
