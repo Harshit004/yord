@@ -38,15 +38,15 @@ To answer this, we calculate the RAM required to store the self-attention matrix
 
 When $N = 12,000,000$:
 
-$$
+```math
 N^2 = (12 \times 10^6)^2 = 144 \times 10^{12} \text{ elements} = 144 \text{ trillion elements}
-$$
+```
 
 If each element is stored as a 2-byte half-precision float (`fp16`):
 
-$$
+```math
 \text{Memory} = 144 \times 10^{12} \times 2 \text{ bytes} = 288 \text{ Terabytes (TB)}
-$$
+```
 
 No consumer computer possesses 288 Terabytes of High-Bandwidth GPU RAM (VRAM). Even a top-tier MacBook Pro maxes out at 128 Gigabytes of RAM.
 
@@ -69,9 +69,9 @@ Let's measure the maximum possible token generation speed on a typical laptop wi
 
 **Calculation**:
 
-$$
+```math
 \text{Generation Speed} = \frac{\text{Memory Bandwidth}}{\text{Bytes per Token}} = \frac{45 \text{ GB/s}}{20 \text{ GB/token}} = 2.25 \text{ tokens/sec}
-$$
+```
 
 If the system runs low on RAM and begins swapping data to disk (page thrashing), speed collapses from $2.25 \text{ tokens/sec}$ to **$0.05 \text{ tokens/sec}$**, making the system unusable.
 
@@ -125,9 +125,9 @@ To make deep research accessible to students and researchers without expensive c
 
 A vector $\mathbf{v}$ is an ordered list of real numbers representing a point in space. In text processing, an embedding model maps a text passage into a $d$-dimensional vector:
 
-$$
+```math
 \mathbf{v} = [v_1, v_2, \dots, v_d]^T \in \mathbb{R}^d
-$$
+```
 
 For example, the model BGE-M3 maps any sentence into a $d = 768$ dimensional vector. Concepts with similar meanings are placed close together in this space.
 
@@ -137,21 +137,21 @@ For example, the model BGE-M3 maps any sentence into a $d = 768$ dimensional vec
 
 To measure the length of a vector $\mathbf{v} \in \mathbb{R}^d$, we use the **Euclidean ($L_2$) Norm**:
 
-$$
+```math
 \|\mathbf{v}\|_2 = \sqrt{\sum_{i=1}^d v_i^2}
-$$
+```
 
 A vector is **unit-normalized** when its length equals $1.0$:
 
-$$
+```math
 \hat{\mathbf{v}} = \frac{\mathbf{v}}{\|\mathbf{v}\|_2}
-$$
+```
 
 The **dot product** (inner product) between two vectors $\mathbf{u}$ and $\mathbf{v}$ measures their geometric alignment:
 
-$$
+```math
 \mathbf{u} \cdot \mathbf{v} = \sum_{i=1}^d u_i v_i = \|\mathbf{u}\|_2 \|\mathbf{v}\|_2 \cos(\theta)
-$$
+```
 
 where $\theta$ is the angle between the two vectors.
 
@@ -161,9 +161,9 @@ where $\theta$ is the angle between the two vectors.
 
 The **Cosine Similarity** measures the angle between two concepts regardless of magnitude:
 
-$$
+```math
 \text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2} = \cos(\theta)
-$$
+```
 
 - If $\cos(\theta) = 1.0$, the vectors point in the exact same direction (identical meaning).
 - If $\cos(\theta) = 0.0$, the vectors are orthogonal (unrelated).
@@ -172,9 +172,9 @@ $$
 > [!TIP]
 > **Mathematical Shortcut**: When vectors are unit-normalized ( $\|\hat{\mathbf{u}}\|_2 = \|\hat{\mathbf{v}}\|_2 = 1.0$ ), Cosine Similarity equals the simple dot product:
 > 
-> $$
+> ```math
 > \text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}
-> $$
+> ```
 
 #### Worked Example 2.1: 2D Vector Geometry
 
@@ -188,33 +188,33 @@ $$
 
 1. Calculate Norms:
    
-   $$
+   ```math
    \|\mathbf{u}\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0
-   $$
+   ```
    
-   $$
+   ```math
    \|\mathbf{v}\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0
-   $$
+   ```
 
 2. Unit Normalization:
    
-   $$
+   ```math
    \hat{\mathbf{u}} = \left[\frac{3}{5}, \frac{4}{5}\right]^T = [0.6, 0.8]^T
-   $$
+   ```
    
-   $$
+   ```math
    \hat{\mathbf{v}} = \left[\frac{4}{4}, \frac{0}{4}\right]^T = [1.0, 0.0]^T
-   $$
+   ```
 
 3. Cosine Similarity:
    
-   $$
+   ```math
    \text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}} = (0.6 \times 1.0) + (0.8 \times 0.0) = 0.60
-   $$
+   ```
    
-   $$
+   ```math
    \theta = \arccos(0.60) = 0.927 \text{ radians} \approx 53.13^\circ
-   $$
+   ```
 
 ---
 
@@ -259,9 +259,9 @@ $$
 
 The Self-Attention operator takes three matrices—Query ($Q$), Key ($K$), and Value ($V$)—and computes weighted combinations:
 
-$$
+```math
 \text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
-$$
+```
 
 - $Q \in \mathbb{R}^{N \times d_k}$: Matrix of queries.
 - $K \in \mathbb{R}^{N \times d_k}$: Matrix of keys.
@@ -280,46 +280,46 @@ Consider their dot product $y = \mathbf{q} \cdot \mathbf{k} = \sum_{i=1}^{d_k} q
 
 1. **Mean of Product**:
    
-   $$
+   ```math
    \mathbb{E}[q_i k_i] = \mathbb{E}[q_i] \mathbb{E}[k_i] = 0 \times 0 = 0
-   $$
+   ```
    
-   $$
+   ```math
    \mathbb{E}[y] = \sum_{i=1}^{d_k} 0 = 0
-   $$
+   ```
 
 2. **Variance of Product**:
    
-   $$
+   ```math
    \text{Var}(q_i k_i) = \mathbb{E}[q_i^2 k_i^2] - (\mathbb{E}[q_i k_i])^2 = \mathbb{E}[q_i^2] \mathbb{E}[k_i^2] - 0 = (1.0) \times (1.0) = 1.0
-   $$
+   ```
 
 3. **Variance of Sum**:
    
-   $$
+   ```math
    \text{Var}(y) = \text{Var}\left(\sum_{i=1}^{d_k} q_i k_i\right) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k
-   $$
+   ```
 
 The variance of the dot product is $d_k$, meaning its standard deviation is $\sqrt{d_k}$. For large $d_k$ (e.g. $d_k = 128$), dot products become extremely large, pushing the `Softmax` function into regions with tiny gradients (vanishing gradient problem).
 
 Dividing by $\sqrt{d_k}$ normalizes the variance back to $1.0$:
 
-$$
+```math
 \text{Var}\left(\frac{y}{\sqrt{d_k}}\right) = \frac{\text{Var}(y)}{d_k} = \frac{d_k}{d_k} = 1.0
-$$
+```
 
 ---
 
 #### Worked Example 3.1: 2D Attention Calculation
 
 **Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys
-$$
+```math
 K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}
-$$
+```
 and values
-$$
+```math
 V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}
-$$
+```
 with $d_k = 2$:
 
 1. Compute raw dot products $\mathbf{q} K^T$.
@@ -331,35 +331,35 @@ with $d_k = 2$:
 
 1. Raw Dot Products:
    
-   $$
+   ```math
    \mathbf{q} K^T = [(1\times 2 + 2\times 0), (1\times 1 + 2\times 3)] = [2.0, 7.0]
-   $$
+   ```
 
 2. Scale by $\sqrt{2}$:
    
-   $$
+   ```math
    \mathbf{s} = \left[\frac{2.0}{1.414}, \frac{7.0}{1.414}\right] = [1.414, 4.950]
-   $$
+   ```
 
 3. Softmax Weights:
    
-   $$
+   ```math
    e^{1.414} \approx 4.112, \quad e^{4.950} \approx 141.176, \quad \text{Sum} = 145.288
-   $$
+   ```
    
-   $$
+   ```math
    w_1 = \frac{4.112}{145.288} \approx 0.028, \quad w_2 = \frac{141.176}{145.288} \approx 0.972
-   $$
+   ```
    
-   $$
+   ```math
    \mathbf{w} = [0.028, 0.972]
-   $$
+   ```
 
 4. Output Vector:
    
-   $$
+   ```math
    \mathbf{o} = 0.028 \times [4.0, 1.0] + 0.972 \times [0.0, 2.0] = [0.112, 0.028] + [0.0, 1.944] = [0.112, 1.972]
-   $$
+   ```
 
 ---
 
@@ -371,9 +371,9 @@ HNSW organizes vectors into hierarchical layers (similar to a skip list). Upper 
 
 The probability of inserting a node into layer $l$ decays exponentially:
 
-$$
+```math
 P(l) = \lfloor -\ln(\text{uniform}(0, 1)) \times m_L \rfloor, \quad m_L = \frac{1}{\ln(M)}
-$$
+```
 
 This guarantees $O(\log N)$ query time complexity.
 
@@ -414,9 +414,9 @@ This guarantees $O(\log N)$ query time complexity.
 
 When a vector database stores 12,000,000 vectors of dimension $768$ (`fp32`), the payload size is:
 
-$$
+```math
 12,000,000 \times 768 \times 4 \text{ bytes} \approx 36.86 \text{ Gigabytes}
-$$
+```
 
 An 8GB RAM machine cannot hold $36.86 \text{ GB}$ in DRAM. 
 
@@ -456,9 +456,9 @@ When the HNSW search algorithm accesses a vector address not currently loaded in
 
 **Solution**:
 
-$$
+```math
 \text{Latency} = 50 \text{ faults} \times 0.1 \text{ ms/fault} = 5.0 \text{ ms}
-$$
+```
 
 A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction while consuming only a few megabytes of active DRAM RAM!
 
@@ -476,13 +476,13 @@ A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction whil
 2. **Question**: Given virtual address $V = 18,442$ bytes and page size $4,096$ bytes, find the Virtual Page Number (VPN) and Offset.
    - *Answer Key*:
      
-     $$
+     ```math
      \text{VPN} = \lfloor 18442 / 4096 \rfloor = 4
-     $$
+     ```
      
-     $$
+     ```math
      \text{Offset} = 18442 \bmod 4096 = 2058 \text{ bytes}
-     $$
+     ```
 
 #### Level 3: Systems Implementation
 
@@ -526,9 +526,9 @@ The $(i, j)$-th entry of the matrix power $A^n$ equals the exact number of direc
 
 **Problem**: Given a 4-node function call graph with adjacency matrix:
 
-$$
+```math
 A = \begin{bmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \end{bmatrix}
-$$
+```
 
 Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 
@@ -536,16 +536,16 @@ Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 
 1. Compute $A^2$:
    
-   $$
+   ```math
    A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
-   $$
+   ```
    Node 1 reaches Node 3 in 2 hops ($A^2_{13} = 1$).
 
 2. Compute $A^3$:
    
-   $$
+   ```math
    A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
-   $$
+   ```
    Node 1 reaches Node 4 in 3 hops ($A^3_{14} = 1$).
 
 ---
@@ -570,14 +570,14 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 #### Level 2: Calculation
 
 2. **Question**: Given 
-   $$
+   ```math
    A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}
-   $$
+   ```
    calculate $A^2$. What does it mean?
    - *Answer Key*: 
-     $$
+     ```math
      A^2 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
-     $$
+     ```
      Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
@@ -665,13 +665,13 @@ ws ::= [ \t\n]*
 2. **Question**: If a prompt context limit is $16,384$ tokens, system prompt uses $1,200$ tokens, output space uses $800$ tokens, and each retrieved document chunk is $400$ tokens, calculate the max chunk capacity.
    - *Answer Key*:
      
-     $$
+     ```math
      \text{Remaining Space} = 16,384 - (1,200 + 800) = 14,384 \text{ tokens}
-     $$
+     ```
      
-     $$
+     ```math
      \text{Max Chunks} = \lfloor 14,384 / 400 \rfloor = 35 \text{ chunks}
-     $$
+     ```
 
 #### Level 3: Systems Implementation
 
@@ -712,9 +712,9 @@ The NLI model takes a **Premise ($P$)** and a **Hypothesis ($H$)** as a joint in
 
 The normalized probability for each class is computed using Softmax:
 
-$$
+```math
 P(\text{Contradiction}) = \frac{e^{z_C}}{e^{z_E} + e^{z_N} + e^{z_C}}
-$$
+```
 
 > [!IMPORTANT]
 > **Rejection Criterion**: If $P(\text{Contradiction}) > 0.65$, the Critic immediately rejects the claim, triggering counter-query loop generation.
@@ -727,27 +727,27 @@ $$
 
 1. Compute Exponentials:
    
-   $$
+   ```math
    e^{1.2} \approx 3.320, \quad e^{0.4} \approx 1.492, \quad e^{3.8} \approx 44.701
-   $$
+   ```
    
-   $$
+   ```math
    \text{Sum} = 3.320 + 1.492 + 44.701 = 49.513
-   $$
+   ```
 
 2. Compute Probabilities:
    
-   $$
+   ```math
    P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\%)
-   $$
+   ```
    
-   $$
+   ```math
    P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\%)
-   $$
+   ```
    
-   $$
+   ```math
    P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\%)
-   $$
+   ```
 
 3. **Decision**: Since $P(C) = 90.3\% > 65\%$, the Critic rejects the hypothesis due to severe factual contradiction.
 
@@ -790,9 +790,9 @@ When multiple agents generate competing research claims $H_1, H_2, H_3$, YORD re
 
 Each hypothesis confidence score $S_i \in [0, 1]$ maps to a single-qubit state $|\psi_i\rangle$ in a 2D complex Hilbert space $\mathbb{C}^2$:
 
-$$
+```math
 |\psi_i\rangle = \cos\left(\frac{\theta_i}{2}\right)|0\rangle + \sin\left(\frac{\theta_i}{2}\right)|1\rangle, \quad \theta_i = \pi S_i
-$$
+```
 
 ---
 
@@ -800,9 +800,9 @@ $$
 
 For a system of 3 competing hypotheses, the total state vector $|\Psi\rangle$ exists in an $8$-dimensional Hilbert space $\mathbb{C}^8$:
 
-$$
+```math
 |\Psi\rangle = |\psi_1\rangle \otimes |\psi_2\rangle \otimes |\psi_3\rangle = \sum_{k=0}^7 c_k |k\rangle
-$$
+```
 
 where $|k\rangle \in \{|000\rangle, |001\rangle, \dots, |111\rangle\}$ are computational basis states.
 
@@ -814,9 +814,9 @@ If hypothesis $H_1$ and $H_2$ contain contradictory claims, a Phase-Flip Matrix 
 
 According to **Born's Rule**, measuring the state vector collapses it to basis state $|k\rangle$ with probability:
 
-$$
+```math
 P(k) = |c_k|^2, \quad \sum_{k=0}^7 P(k) = 1.0
-$$
+```
 
 The system selects state $k^* = \arg\max_k P(k)$ as the final consensus answer.
 
@@ -826,21 +826,21 @@ The system selects state $k^* = \arg\max_k P(k)$ as the final consensus answer.
 
 **Solution**:
 
-$$
+```math
 \theta_1 = \pi \times 0.50 = \frac{\pi}{2} \quad (90^\circ)
-$$
+```
 
-$$
+```math
 \frac{\theta_1}{2} = 45^\circ
-$$
+```
 
-$$
+```math
 \alpha = \cos(45^\circ) = \frac{1}{\sqrt{2}} \approx 0.7071, \quad \beta = \sin(45^\circ) = \frac{1}{\sqrt{2}} \approx 0.7071
-$$
+```
 
-$$
+```math
 |\psi_1\rangle = 0.7071|0\rangle + 0.7071|1\rangle
-$$
+```
 
 ---
 
@@ -933,9 +933,9 @@ The target model processes the draft sequence in one forward pass. It computes i
 
 For each token $x_i$ in sequence, we accept it with a specific probability.
 
-$$
+```math
 P(\text{accept } x_i) = \min\left(1, \frac{q(x_i)}{p(x_i)}\right)
-$$
+```
 
 If $q(x_i) \geq p(x_i)$, the target model likes the token more than the draft model did. We always accept it. 
 If $q(x_i) < p(x_i)$, we accept it randomly with probability $q(x_i)/p(x_i)$. 
@@ -945,26 +945,26 @@ If $q(x_i) < p(x_i)$, we accept it randomly with probability $q(x_i)/p(x_i)$.
 
 The adjusted resampling distribution subtracts the draft probability from the target probability, clamping at zero:
 
-$$
+```math
 P(x'_i = x) = \frac{\max(0, q(x) - p(x))}{\sum_y \max(0, q(y) - p(y))}
-$$
+```
 
 ### 9.3.1 Proof of Exact Distribution (Why Speculative Decoding is Lossless)
 
 Speculative decoding guarantees the output matches the target model exactly. It is mathematically lossless. 
 The probability of outputting a specific token $x$ is the sum of two events. The token is drafted and accepted, or the token is rejected and resampled.
 
-$$
+```math
 P(\text{output } x) = p(x) \min\left(1, \frac{q(x)}{p(x)}\right) + P(\text{reject}) \cdot P(\text{resample } x)
-$$
+```
 
 We know $P(\text{reject}) = \sum_y p(y) \max(0, 1 - \frac{q(y)}{p(y)}) = \sum_y \max(0, p(y) - q(y))$.
 It is a known mathematical property that $\sum_y \max(0, p(y) - q(y)) = \sum_y \max(0, q(y) - p(y))$. 
 This cancels the denominator in the resampling distribution. The equation simplifies perfectly:
 
-$$
+```math
 P(\text{output } x) = \min(p(x), q(x)) + \max(0, q(x) - p(x)) = q(x)
-$$
+```
 The output distribution is identically $q(x)$. The speculative decoding output is statistically indistinguishable from running the target model alone.
 
 ## 9.4 Worked Example: Complete Numerical Dry Run
@@ -976,9 +976,9 @@ The draft model samples from this distribution and selects token **A**.
 The target model evaluates the context and outputs: $q(A)=0.3, q(B)=0.4, q(C)=0.2, q(D)=0.1$.
 We calculate the acceptance ratio for token A.
 
-$$
+```math
 \text{Ratio} = \min\left(1, \frac{0.3}{0.5}\right) = \min(1, 0.6) = 0.6
-$$
+```
 
 We draw a uniform random number $u \sim U(0,1)$. 
 
@@ -1005,15 +1005,15 @@ The speedup depends heavily on how often the target model agrees with the draft 
 
 The expected number of accepted tokens per speculation round is a geometric series.
 
-$$
+```math
 E[\text{accepted}] = \frac{1 - \alpha^{K+1}}{1 - \alpha}
-$$
+```
 
 The speedup ratio compares the tokens gained to the computational cost. Let $c_{draft}$ and $c_{target}$ be the time cost of a single forward pass for the draft and target models respectively.
 
-$$
+```math
 \text{Speedup} = \frac{E[\text{accepted}]}{1 + \frac{c_{draft}}{c_{target}} \cdot K}
-$$
+```
 
 ### Solved Example 9.2: Speedup Calculation
 
@@ -1021,21 +1021,21 @@ Assume an acceptance rate $\alpha = 0.7$, draft length $K = 5$, and a cost ratio
 
 **Step 1.** Calculate expected accepted tokens per round.
 
-$$
+```math
 E[\text{accepted}] = \frac{1 - 0.7^6}{1 - 0.7} = \frac{1 - 0.1176}{0.3} = 2.94 \text{ tokens}
-$$
+```
 
 **Step 2.** Calculate the speedup ratio.
 
-$$
+```math
 \text{Speedup} = \frac{2.94}{1 + (0.3 \cdot 5)} = \frac{2.94}{2.5} = 1.176\text{x}
-$$
+```
 
 A 1.17x speedup seems modest. But when memory bandwidth dominates (as it does on our i5), the cost ratio drops. If $c_{draft}/c_{target} = 0.1$, the speedup jumps to:
 
-$$
+```math
 \text{Speedup} = \frac{2.94}{1 + (0.1 \cdot 5)} = \frac{2.94}{1.5} = 1.96\text{x}
-$$
+```
 
 This is why a 1.5x to 2.0x speedup is the standard expectation in bandwidth-bound scenarios.
 
@@ -1427,23 +1427,23 @@ We need to store Key and Value tensors for every token. Let $L$ be the number of
 
 The formula for bytes per token is:
 
-$$
+```math
 \text{Bytes per token} = 2 \times L \times h_{kv} \times d_h \times 2
-$$
+```
 
 The first 2 accounts for both Keys and Values. The final 2 accounts for the FP16 bytes.
 
 Let's plug in the numbers:
 
-$$
+```math
 \text{Bytes per token} = 2 \times 28 \times 2 \times 128 \times 2 = 28,672 \text{ bytes/token}
-$$
+```
 
 For our 3,400 token prompt context, the total size is:
 
-$$
+```math
 \text{Total KV Cache} = 3,400 \times 28,672 = 97,484,800 \text{ bytes} \approx 97.5 \text{ MB}
-$$
+```
 
 Without GQA (where $h_{kv}$ would equal the full 16 heads instead of 2), the cache would be $3,400 \times 2 \times 28 \times 16 \times 128 \times 2 = 779.9$ MB. GQA saves us an 8x reduction in KV cache size.
 
