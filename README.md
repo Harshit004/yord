@@ -169,8 +169,8 @@ $$
 > [!TIP]
 > **Mathematical Shortcut**: When vectors are unit-normalized ( $\|\hat{\mathbf{u}}\|_2 = \|\hat{\mathbf{v}}\|_2 = 1.0$ ), Cosine Similarity equals the simple dot product:
 > $$
-\text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}
-$$
+> \text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}
+> $$
 
 #### Worked Example 2.1: 2D Vector Geometry
 
@@ -184,27 +184,27 @@ $$
 
 1. Calculate Norms:
    $$
-\|\mathbf{u}\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0
-$$
+   \|\mathbf{u}\|_2 = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5.0
    $$
-\|\mathbf{v}\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0
-$$
+   $$
+   \|\mathbf{v}\|_2 = \sqrt{4^2 + 0^2} = \sqrt{16} = 4.0
+   $$
 
 2. Unit Normalization:
    $$
-\hat{\mathbf{u}} = \left[\frac{3}{5}, \frac{4}{5}\right]^T = [0.6, 0.8]^T
-$$
+   \hat{\mathbf{u}} = \left[\frac{3}{5}, \frac{4}{5}\right]^T = [0.6, 0.8]^T
    $$
-\hat{\mathbf{v}} = \left[\frac{4}{4}, \frac{0}{4}\right]^T = [1.0, 0.0]^T
-$$
+   $$
+   \hat{\mathbf{v}} = \left[\frac{4}{4}, \frac{0}{4}\right]^T = [1.0, 0.0]^T
+   $$
 
 3. Cosine Similarity:
    $$
-\text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}} = (0.6 \times 1.0) + (0.8 \times 0.0) = 0.60
-$$
+   \text{Sim}_{\text{cos}}(\mathbf{u}, \mathbf{v}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}} = (0.6 \times 1.0) + (0.8 \times 0.0) = 0.60
    $$
-\theta = \arccos(0.60) = 0.927 \text{ radians} \approx 53.13^\circ
-$$
+   $$
+   \theta = \arccos(0.60) = 0.927 \text{ radians} \approx 53.13^\circ
+   $$
 
 ---
 
