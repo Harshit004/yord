@@ -96,14 +96,17 @@ To make deep research accessible to students and researchers without expensive c
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does doubling the input context length quadruples the memory required for dense self-attention?
    - *Answer Key*: Dense attention computes an $N \times N$ matrix. If $N \to 2N$, $(2N)^2 = 4N^2$, which requires $4 \times$ the memory.
 
 #### Level 2: Calculation
+
 2. **Question**: Calculate the memory required for a dense attention matrix with $N = 100,000$ tokens using 4-byte `fp32` floats.
    - *Answer Key*: $100,000^2 = 10^{10}$ elements. $10^{10} \times 4 \text{ bytes} = 40,000,000,000 \text{ bytes} = 40 \text{ GB}$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python function to estimate DRAM token generation speed given model size (in GB) and DRAM bandwidth (in GB/s).
    - *Answer Key*:
      ```python
@@ -218,14 +221,17 @@ $$
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does unit-normalizing vectors allow us to replace slow Cosine Similarity formulas with fast dot products?
    - *Answer Key*: Because when $\|\mathbf{u}\|_2 = \|\mathbf{v}\|_2 = 1.0$, the denominator in $\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$ becomes $1.0$, leaving just $\mathbf{u} \cdot \mathbf{v}$.
 
 #### Level 2: Calculation
+
 2. **Question**: Compute the dot product of $\mathbf{a} = [0.6, 0.8]^T$ and $\mathbf{b} = [0.8, -0.6]^T$. Are they orthogonal?
    - *Answer Key*: $\mathbf{a} \cdot \mathbf{b} = (0.6 \times 0.8) + (0.8 \times -0.6) = 0.48 - 0.48 = 0.0$. Yes, they are orthogonal ($90^\circ$).
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a C++ function to compute the unit normalization of a 768-element `std::vector<float>` in-place.
    - *Answer Key*:
      ```cpp
@@ -368,14 +374,17 @@ This guarantees $O(\log N)$ query time complexity.
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does Softmax produce nearly zero gradients when input values are extremely large?
    - *Answer Key*: Because for large inputs $z$, $e^z$ dominates, making one weight $\approx 1.0$ and others $\approx 0.0$. The derivative of Softmax in saturated regions approaches zero.
 
 #### Level 2: Calculation
+
 2. **Question**: If $d_k = 64$, what scaling factor should be used to normalize dot product variance?
    - *Answer Key*: $\sqrt{d_k} = \sqrt{64} = 8.0$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Implement a Python function that computes Softmax with numerical stability (subtracting $\max(z)$ ).
    - *Answer Key*:
      ```python
@@ -450,10 +459,12 @@ A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction whil
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does `mmap` prevent application crashes when opening files larger than system physical RAM?
    - *Answer Key*: `mmap` assigns virtual memory addresses without allocating physical DRAM up front. Data is loaded on-demand in 4KB pages.
 
 #### Level 2: Calculation
+
 2. **Question**: Given virtual address $V = 18,442$ bytes and page size $4,096$ bytes, find the Virtual Page Number (VPN) and Offset.
    - *Answer Key*:
      
@@ -466,6 +477,7 @@ $$
 $$
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write C code using `mmap()` to map a file read-only.
    - *Answer Key*:
      ```c
@@ -543,14 +555,17 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why is structural AST filtering faster than vector similarity search for code symbol lookups?
    - *Answer Key*: AST lookup is an $O(1)$ matrix/hash table access, whereas vector search requires high-dimensional distance math.
 
 #### Level 2: Calculation
+
 2. **Question**: Given $A = \begin{bmatrix} 0 & 1 \\\\ 1 & 0 \end{bmatrix}$, calculate $A^2$. What does it mean?
    - *Answer Key*: $A^2 = \begin{bmatrix} 1 & 0 \\\\ 0 & 1 \end{bmatrix}$. Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python function using `tree_sitter` to extract all function names from Python code.
    - *Answer Key*:
      ```python
@@ -626,10 +641,12 @@ ws ::= [ \t\n]*
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does enforcing GBNF grammars at the token decoding level eliminate JSON parsing errors?
    - *Answer Key*: GBNF masks invalid tokens during sampling, making it physically impossible for the LLM to output syntax-breaking characters.
 
 #### Level 2: Calculation
+
 2. **Question**: If a prompt context limit is $16,384$ tokens, system prompt uses $1,200$ tokens, output space uses $800$ tokens, and each retrieved document chunk is $400$ tokens, calculate the max chunk capacity.
    - *Answer Key*:
      
@@ -642,6 +659,7 @@ $$
 $$
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python LangGraph node that updates a shared state dictionary.
    - *Answer Key*:
      ```python
@@ -723,14 +741,17 @@ $$
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: Why does joint cross-encoder attention $[P, H]$ produce more accurate contradiction scores than dual bi-encoder vectors?
    - *Answer Key*: Cross-encoders compute token-level cross-attention between every word in the premise and hypothesis simultaneously.
 
 #### Level 2: Calculation
+
 2. **Question**: If $z_E = 2.0$, $z_N = 2.0$, $z_C = 2.0$, what are the class probabilities?
    - *Answer Key*: All logits are equal, so $P(E) = P(N) = P(C) = 1/3 \approx 33.33\%$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write a Python script running `onnxruntime` to score an NLI premise-hypothesis pair.
    - *Answer Key*:
      ```python
@@ -811,14 +832,17 @@ $$
 ### Exercises & Step-by-Step Answer Key
 
 #### Level 1: Intuition
+
 1. **Question**: What does Born's Rule state regarding complex amplitudes $c_k$ and measurement probabilities $P(k)$?
    - *Answer Key*: Born's Rule states that the probability of observing basis state $|k\rangle$ equals the squared magnitude of its complex coefficient ($P(k) = |c_k|^2$).
 
 #### Level 2: Calculation
+
 2. **Question**: If $|\psi\rangle = 0.6|0\rangle + 0.8|1\rangle$, verify that total probability equals $1.0$.
    - *Answer Key*: $P(0) = |0.6|^2 = 0.36$, $P(1) = |0.8|^2 = 0.64$. Total = $0.36 + 0.64 = 1.0$.
 
 #### Level 3: Systems Implementation
+
 3. **Question**: Write C++ code to compute the Kronecker tensor product of two 2D vectors.
    - *Answer Key*:
      ```cpp
@@ -1124,6 +1148,7 @@ Speculative decoding works best for factual, low-temperature responses. In codin
 > **Concept Motive**: Observe how the YORD architecture resolves real-world research problems across materials science, biochemistry, software engineering, business intelligence, and legal analysis.
 
 ### Case Study 1: Nanomaterial Synthesis Phase Boundaries
+
 - **Problem**: Synthesizing titanium dioxide ($\text{TiO}_2$) nanoparticles requires precise temperature control to avoid phase transitions from Anatase to Rutile.
 - **YORD Execution**:
   1. Ingestion Agent fetches 1,400 PDF research papers into Qdrant mmap.
@@ -1132,18 +1157,22 @@ Speculative decoding works best for factual, low-temperature responses. In codin
   4. NLI outputs $P(\text{Contradiction}) = 94.2\%$. Claim rejected. Corrected boundary saved to memory.
 
 ### Case Study 2: Intrinsically Disordered Protein (IDP) Folding
+
 - **Problem**: IDP proteins lack fixed 3D structures, confusing standard folding models.
 - **YORD Execution**: Graphify AST parses amino acid sequence residue dependencies, filtering out invalid rigid-body structural assumptions.
 
 ### Case Study 3: Codebase Security Dependency Audits
+
 - **Problem**: Auditing a C++ library for memory leak vulnerabilities.
 - **YORD Execution**: Tree-sitter AST parser traces `malloc`/`free` call graph reachability. Matrix power $A^k$ identifies un-freed heap allocations in 180ms.
 
 ### Case Study 4: Market Competitor Intelligence Mining
+
 - **Problem**: Tracking pricing shifts across 50 competitor websites offline.
 - **YORD Execution**: Tier 1 CLI scraper extracts table metrics; micro-LLM summarizes changes under strict GBNF JSON constraints.
 
 ### Case Study 5: Legal Contract Regulatory Compliance
+
 - **Problem**: Detecting indemnification clause conflicts in a 200-page commercial lease.
 - **YORD Execution**: Decoupled NLI cross-encoder compares lease clauses against statutory liability limits, identifying 3 direct compliance violations.
 
