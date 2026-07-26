@@ -281,24 +281,24 @@ Consider their dot product $y = \mathbf{q} \cdot \mathbf{k} = \sum_{i=1}^{d_k} q
 1. **Mean of Product**:
    
    $$
-\mathbb{E}[q_i k_i] = \mathbb{E}[q_i] \mathbb{E}[k_i] = 0 \times 0 = 0
-$$
+   \mathbb{E}[q_i k_i] = \mathbb{E}[q_i] \mathbb{E}[k_i] = 0 \times 0 = 0
+   $$
    
    $$
-\mathbb{E}[y] = \sum_{i=1}^{d_k} 0 = 0
-$$
+   \mathbb{E}[y] = \sum_{i=1}^{d_k} 0 = 0
+   $$
 
 2. **Variance of Product**:
    
    $$
-\text{Var}(q_i k_i) = \mathbb{E}[q_i^2 k_i^2] - (\mathbb{E}[q_i k_i])^2 = \mathbb{E}[q_i^2] \mathbb{E}[k_i^2] - 0 = (1.0) \times (1.0) = 1.0
-$$
+   \text{Var}(q_i k_i) = \mathbb{E}[q_i^2 k_i^2] - (\mathbb{E}[q_i k_i])^2 = \mathbb{E}[q_i^2] \mathbb{E}[k_i^2] - 0 = (1.0) \times (1.0) = 1.0
+   $$
 
 3. **Variance of Sum**:
    
    $$
-\text{Var}(y) = \text{Var}\left(\sum_{i=1}^{d_k} q_i k_i\right) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k
-$$
+   \text{Var}(y) = \text{Var}\left(\sum_{i=1}^{d_k} q_i k_i\right) = \sum_{i=1}^{d_k} \text{Var}(q_i k_i) = d_k
+   $$
 
 The variance of the dot product is $d_k$, meaning its standard deviation is $\sqrt{d_k}$. For large $d_k$ (e.g. $d_k = 128$), dot products become extremely large, pushing the `Softmax` function into regions with tiny gradients (vanishing gradient problem).
 
@@ -312,7 +312,15 @@ $$
 
 #### Worked Example 3.1: 2D Attention Calculation
 
-**Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys $K = \begin{bmatrix} 2.0 & 0.0 \\\\ 1.0 & 3.0 \end{bmatrix}$, and values $V = \begin{bmatrix} 4.0 & 1.0 \\\\ 0.0 & 2.0 \end{bmatrix}$ with $d_k = 2$:
+**Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys
+$$
+K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}
+$$
+and values
+$$
+V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}
+$$
+with $d_k = 2$:
 
 1. Compute raw dot products $\mathbf{q} K^T$.
 2. Divide by $\sqrt{d_k} = \sqrt{2} \approx 1.414$.
@@ -324,34 +332,34 @@ $$
 1. Raw Dot Products:
    
    $$
-\mathbf{q} K^T = [(1\times 2 + 2\times 0), (1\times 1 + 2\times 3)] = [2.0, 7.0]
-$$
+   \mathbf{q} K^T = [(1\times 2 + 2\times 0), (1\times 1 + 2\times 3)] = [2.0, 7.0]
+   $$
 
 2. Scale by $\sqrt{2}$:
    
    $$
-\mathbf{s} = \left[\frac{2.0}{1.414}, \frac{7.0}{1.414}\right] = [1.414, 4.950]
-$$
+   \mathbf{s} = \left[\frac{2.0}{1.414}, \frac{7.0}{1.414}\right] = [1.414, 4.950]
+   $$
 
 3. Softmax Weights:
    
    $$
-e^{1.414} \approx 4.112, \quad e^{4.950} \approx 141.176, \quad \text{Sum} = 145.288
-$$
+   e^{1.414} \approx 4.112, \quad e^{4.950} \approx 141.176, \quad \text{Sum} = 145.288
+   $$
    
    $$
-w_1 = \frac{4.112}{145.288} \approx 0.028, \quad w_2 = \frac{141.176}{145.288} \approx 0.972
-$$
+   w_1 = \frac{4.112}{145.288} \approx 0.028, \quad w_2 = \frac{141.176}{145.288} \approx 0.972
+   $$
    
    $$
-\mathbf{w} = [0.028, 0.972]
-$$
+   \mathbf{w} = [0.028, 0.972]
+   $$
 
 4. Output Vector:
    
    $$
-\mathbf{o} = 0.028 \times [4.0, 1.0] + 0.972 \times [0.0, 2.0] = [0.112, 0.028] + [0.0, 1.944] = [0.112, 1.972]
-$$
+   \mathbf{o} = 0.028 \times [4.0, 1.0] + 0.972 \times [0.0, 2.0] = [0.112, 0.028] + [0.0, 1.944] = [0.112, 1.972]
+   $$
 
 ---
 
@@ -469,12 +477,12 @@ A query latency of $5.0 \text{ ms}$ is extremely fast for human interaction whil
    - *Answer Key*:
      
      $$
-\text{VPN} = \lfloor 18442 / 4096 \rfloor = 4
-$$
+     \text{VPN} = \lfloor 18442 / 4096 \rfloor = 4
+     $$
      
      $$
-\text{Offset} = 18442 \bmod 4096 = 2058 \text{ bytes}
-$$
+     \text{Offset} = 18442 \bmod 4096 = 2058 \text{ bytes}
+     $$
 
 #### Level 3: Systems Implementation
 
@@ -519,7 +527,7 @@ The $(i, j)$-th entry of the matrix power $A^n$ equals the exact number of direc
 **Problem**: Given a 4-node function call graph with adjacency matrix:
 
 $$
-A = \begin{bmatrix} 0 & 1 & 0 & 0 \\\\ 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}
+A = \begin{bmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \end{bmatrix}
 $$
 
 Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
@@ -529,15 +537,15 @@ Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 1. Compute $A^2$:
    
    $$
-A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}
-$$
+   A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
+   $$
    Node 1 reaches Node 3 in 2 hops ($A^2_{13} = 1$).
 
 2. Compute $A^3$:
    
    $$
-A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \\\\ 0 & 0 & 0 & 0 \end{bmatrix}
-$$
+   A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
+   $$
    Node 1 reaches Node 4 in 3 hops ($A^3_{14} = 1$).
 
 ---
@@ -561,8 +569,16 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 
 #### Level 2: Calculation
 
-2. **Question**: Given $A = \begin{bmatrix} 0 & 1 \\\\ 1 & 0 \end{bmatrix}$, calculate $A^2$. What does it mean?
-   - *Answer Key*: $A^2 = \begin{bmatrix} 1 & 0 \\\\ 0 & 1 \end{bmatrix}$. Nodes reach themselves in 2 hops due to a bidirectional cycle.
+2. **Question**: Given 
+   $$
+   A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}
+   $$
+   calculate $A^2$. What does it mean?
+   - *Answer Key*: 
+     $$
+     A^2 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+     $$
+     Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
 
@@ -651,12 +667,12 @@ ws ::= [ \t\n]*
    - *Answer Key*:
      
      $$
-\text{Remaining Space} = 16,384 - (1,200 + 800) = 14,384 \text{ tokens}
-$$
+     \text{Remaining Space} = 16,384 - (1,200 + 800) = 14,384 \text{ tokens}
+     $$
      
      $$
-\text{Max Chunks} = \lfloor 14,384 / 400 \rfloor = 35 \text{ chunks}
-$$
+     \text{Max Chunks} = \lfloor 14,384 / 400 \rfloor = 35 \text{ chunks}
+     $$
 
 #### Level 3: Systems Implementation
 
@@ -713,26 +729,26 @@ $$
 1. Compute Exponentials:
    
    $$
-e^{1.2} \approx 3.320, \quad e^{0.4} \approx 1.492, \quad e^{3.8} \approx 44.701
-$$
+   e^{1.2} \approx 3.320, \quad e^{0.4} \approx 1.492, \quad e^{3.8} \approx 44.701
+   $$
    
    $$
-\text{Sum} = 3.320 + 1.492 + 44.701 = 49.513
-$$
+   \text{Sum} = 3.320 + 1.492 + 44.701 = 49.513
+   $$
 
 2. Compute Probabilities:
    
    $$
-P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\%)
-$$
+   P(E) = \frac{3.320}{49.513} \approx 0.067 \quad (6.7\%)
+   $$
    
    $$
-P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\%)
-$$
+   P(N) = \frac{1.492}{49.513} \approx 0.030 \quad (3.0\%)
+   $$
    
    $$
-P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\%)
-$$
+   P(C) = \frac{44.701}{49.513} \approx 0.903 \quad (90.3\%)
+   $$
 
 3. **Decision**: Since $P(C) = 90.3\% > 65\%$, the Critic rejects the hypothesis due to severe factual contradiction.
 
