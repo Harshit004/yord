@@ -405,21 +405,21 @@ An 8GB RAM machine cannot hold $36.86 \text{ GB}$ in DRAM.
 
 Instead of loading vectors into RAM, Qdrant uses the OS system call `mmap()`. This maps the 36.86 GB file on the SSD directly into the process's virtual address space.
 
-```
-+-------------------------------------------------------+
-|            Virtual Memory Address Space               |
-+-------------------------------------------------------+
-                           |
-                     Page Table Lookup
-                           |
-            +--------------+--------------+
-            |                             |
-      (In DRAM)                     (Not in DRAM)
-            |                             |
-    Read Physical RAM             Trigger PAGE FAULT
-                                          |
-                                OS Kernel reads 4KB
-                                  Page from SSD
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+
+start
+:Virtual Memory Address Space;
+:Page Table Lookup;
+if (Is page in DRAM?) then (In DRAM)
+  :Read Physical RAM;
+else (Not in DRAM)
+  :Trigger PAGE FAULT;
+  :OS Kernel reads 4KB\nPage from SSD;
+endif
+stop
+@enduml
 ```
 
 ---
@@ -576,45 +576,24 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 
 Multi-agent coordination in YORD is managed by a deterministic **LangGraph State Machine** operating over a shared in-memory JSON state bus.
 
-```
-       +------------------+
-       |  User Research   |
-       |      Query       |
-       +--------+---------+
-                |
-                v
-       +------------------+
-       |  Chairman Agent  |  (Task Decomposition)
-       +--------+---------+
-                |
-                v
-       +------------------+
-       |     PM Agent     |  (DAG Scheduling)
-       +--------+---------+
-                |
-                v
-       +------------------+
-       | Ingestion Agent  |  (Tier 1 CLI / Tier 2 Browser)
-       +--------+---------+
-                |
-                v
-       +------------------+
-       | Synthesizer Agent|  (Qwen2.5-1.5B Micro-Model)
-       +--------+---------+
-                |
-                v
-       +------------------+
-       |   Critic Agent   |  (NLI + AST Graph Verification)
-       +--------+---------+
-                |
-        +-------+-------+
-        |               |
-   (Rejected)      (Approved)
-        |               |
-        v               v
-  Counter-Query   +------------------+
-    Loop          | Distiller Agent  | (Persist to Memory)
-                  +------------------+
+```plantuml
+@startuml
+skinparam defaultTextAlignment center
+
+start
+:User Research\nQuery;
+:Chairman Agent\n(Task Decomposition);
+:PM Agent\n(DAG Scheduling);
+:Ingestion Agent\n(Tier 1 CLI / Tier 2 Browser);
+:Synthesizer Agent\n(Qwen2.5-1.5B Micro-Model);
+repeat
+  :Critic Agent\n(NLI + AST Graph Verification);
+backward:Counter-Query Loop;
+repeat while (Evaluation) is (Rejected)
+-> Approved;
+:Distiller Agent\n(Persist to Memory);
+stop
+@enduml
 ```
 
 ---
