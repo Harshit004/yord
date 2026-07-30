@@ -172,6 +172,7 @@ $$
 > [!TIP]
 > **Mathematical Shortcut**: When vectors are unit-normalized ( $\|\hat{\mathbf{u}}\|_2 = \|\hat{\mathbf{v}}\|_2 = 1.0$ ), Cosine Similarity equals the simple dot product:
 > 
+
 $$
 > \text{Sim}_{\text{cos}}(\hat{\mathbf{u}}, \hat{\mathbf{v}}) = \hat{\mathbf{u}} \cdot \hat{\mathbf{v}}
 $$
@@ -313,13 +314,17 @@ $$
 #### Worked Example 3.1: 2D Attention Calculation
 
 **Problem**: Given a query $\mathbf{q} = [1.0, 2.0]^T$, keys
+
 $$
 K = \begin{bmatrix} 2.0 & 0.0 \\ 1.0 & 3.0 \end{bmatrix}
 $$
+
 and values
+
 $$
 V = \begin{bmatrix} 4.0 & 1.0 \\ 0.0 & 2.0 \end{bmatrix}
 $$
+
 with $d_k = 2$:
 
 1. Compute raw dot products $\mathbf{q} K^T$.
@@ -539,6 +544,7 @@ Calculate $A^2$ (2-hop paths) and $A^3$ (3-hop paths).
 $$
 A^2 = A \times A = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
 $$
+
    Node 1 reaches Node 3 in 2 hops ($A^2_{13} = 1$).
 
 2. Compute $A^3$:
@@ -546,6 +552,7 @@ $$
 $$
 A^3 = A^2 \times A = \begin{bmatrix} 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}
 $$
+
    Node 1 reaches Node 4 in 3 hops ($A^3_{14} = 1$).
 
 ---
@@ -570,14 +577,18 @@ If an LLM hypothesis claims function $A$ calls function $B$, Graphify checks the
 #### Level 2: Calculation
 
 2. **Question**: Given 
+
 $$
 A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}
 $$
+
    calculate $A^2$. What does it mean?
    - *Answer Key*: 
+
 $$
 A^2 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
 $$
+
      Nodes reach themselves in 2 hops due to a bidirectional cycle.
 
 #### Level 3: Systems Implementation
@@ -965,6 +976,7 @@ This cancels the denominator in the resampling distribution. The equation simpli
 $$
 P(\text{output } x) = \min(p(x), q(x)) + \max(0, q(x) - p(x)) = q(x)
 $$
+
 The output distribution is identically $q(x)$. The speculative decoding output is statistically indistinguishable from running the target model alone.
 
 ## 9.4 Worked Example: Complete Numerical Dry Run
