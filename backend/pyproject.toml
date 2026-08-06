@@ -21,6 +21,7 @@ dependencies = [
     "networkx",
     "markitdown",
     "llama-cpp-python",
+    "python-multipart",
 ]
 
 [build-system]
