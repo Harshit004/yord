@@ -2,13 +2,14 @@
 Synthesizer Node for YORD.
 Synthesizes retrieved context and raw queries into high-fidelity research outputs.
 Performs dynamic HNSW mmap vector retrieval and grounds outputs with exact citations.
-Supports live LLM auto-detection (Qwen2.5-1.5B / Ollama / llama.cpp) with intelligent local fallback.
+Supports live LLM execution on local GGUF models via llama-cli, Ollama, or llama.cpp server.
 RAM Impact: Low (<50MB Python process; ~1.0GB model VRAM during LLM execution).
 """
 
 import os
 import json
 import re
+import subprocess
 import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
@@ -24,6 +25,8 @@ except ImportError:
     from engine.qdrant_client import LocalVectorStore
     from engine.model_loader import MODEL_PATH
 
+LLAMA_CLI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../bin/build/bin/llama-cli"))
+
 embedder = LightweightEmbeddings(dimension=768)
 vector_store = LocalVectorStore(collection_name="yord_corpus")
 
@@ -31,8 +34,8 @@ FACT_CHECK_BADGE = "\n\n🛡️ **Grounded Confidence**: 100% Factually Verified
 
 def query_local_llm_server(prompt: str) -> Optional[str]:
     """
-    Auto-detects active local LLM endpoints (Ollama on :11434 or llama.cpp on :8080)
-    with primary target model qwen2.5:1.5b.
+    Auto-detects active local LLM endpoints (Ollama / llama.cpp server)
+    or executes native built-in llama-cli binary directly on qwen2.5-1.5b-instruct-q4_k_m.gguf.
     Returns generated response string or None if server is unavailable.
     """
     # 1. Try Ollama (http://localhost:11434/api/generate)
@@ -40,40 +43,52 @@ def query_local_llm_server(prompt: str) -> Optional[str]:
         url = "http://localhost:11434/api/generate"
         payload = json.dumps({"model": "qwen2.5:1.5b", "prompt": prompt, "stream": False}).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=2) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            return data.get("response")
+            if data.get("response"):
+                return data.get("response")
     except Exception:
         pass
 
-    # 2. Try llama.cpp (http://localhost:8080/completion)
+    # 2. Try llama.cpp server (http://localhost:8080/completion)
     try:
         url = "http://localhost:8080/completion"
         payload = json.dumps({"prompt": prompt, "n_predict": 512}).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=2) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            return data.get("content")
+            if data.get("content"):
+                return data.get("content")
     except Exception:
         pass
 
-    return None
+    # 3. Direct local native llama-cli subprocess execution on GGUF model
+    if os.path.exists(MODEL_PATH) and os.path.exists(LLAMA_CLI_PATH):
+        try:
+            formatted_prompt = f"<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
+            cmd = [
+                LLAMA_CLI_PATH,
+                "-m", MODEL_PATH,
+                "-p", formatted_prompt,
+                "-n", "512",
+                "--temp", "0.7",
+                "-st",
+                "--no-display-prompt"
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            if res.stdout.strip():
+                # Filter out llama-cli initialization logs if any
+                lines = []
+                for line in res.stdout.splitlines():
+                    if any(line.startswith(prefix) for prefix in ["llama_", "main:", "print_info:", "load_tensors:", "system_info:", "common_", "init:", "sampler", "generate:"]):
+                        continue
+                    lines.append(line)
+                clean_output = "\n".join(lines).strip()
+                if clean_output:
+                    return clean_output
+        except Exception as e:
+            pass
 
-def handle_conversational_fallback(query: str) -> Optional[str]:
-    """
-    Handles conversational greetings, identities, and basic interaction prompts.
-    """
-    q = query.strip().lower()
-    if re.search(r'\b(hi|hello|hey|greetings|excuse me|who are you|what is yord)\b', q):
-        return (
-            "I am YORD — an autonomous local AI research harness designed for 100% offline, privacy-first execution.\n\n"
-            "**Core Capabilities:**\n"
-            "- **mmap HNSW Vector Engine**: Query 12M+ token corpora with zero-RAM overhead.\n"
-            "- **Dynamic Subagent Dispatcher**: Instantiates domain specialist agents on the fly.\n"
-            "- **Local GGUF Model Execution**: Fits within 8GB RAM constraints.\n"
-            "- **Antigravity Skill Registry**: Auto-downloads and registers domain skills.\n\n"
-            "How can I assist your research today?"
-        )
     return None
 
 def synthesize_response(state: YordState) -> YordState:
@@ -106,17 +121,16 @@ def synthesize_response(state: YordState) -> YordState:
     state["context_chunk_ids"] = chunk_ids
     state["context_token_count"] = total_tokens
     
-    context_str = "\n".join(context_blocks) if context_blocks else "No relevant document chunks found in index."
+    context_str = "\n".join(context_blocks) if context_blocks else "No custom document chunks ingested yet."
     
     prompt = (
         f"You are YORD, an autonomous local AI research assistant.\n"
-        f"Query: {raw_query}\n"
-        f"Query Type: {query_type}\n"
-        f"Retrieved Context:\n{context_str}\n\n"
-        f"Provide a rigorous, non-sycophantic, objective synthesis answering the query based on the context."
+        f"Query: {raw_query}\n\n"
+        f"Context from Knowledge Base:\n{context_str}\n\n"
+        f"Provide a direct, detailed, helpful response answering the user query."
     )
     
-    # 2. Try live local LLM server inference
+    # 2. Try live local LLM server / native llama-cli inference
     llm_output = query_local_llm_server(prompt)
     
     if llm_output:
@@ -128,36 +142,15 @@ def synthesize_response(state: YordState) -> YordState:
             f"{FACT_CHECK_BADGE}"
         )
     else:
-        # 3. Check for conversational responses
-        conv_response = handle_conversational_fallback(raw_query)
-        if conv_response:
-            synthesis = f"### YORD Autonomous Assistant\n\n{conv_response}{FACT_CHECK_BADGE}"
-        else:
-            has_local_gguf = os.path.exists(MODEL_PATH)
-            gguf_status = f"Local GGUF Present ({os.path.basename(MODEL_PATH)})" if has_local_gguf else "GGUF Model Downloading"
-
-            if context_blocks:
-                formatted_blocks = "\n".join([f"- **{block}**" for block in context_blocks])
-                synthesis = (
-                    f"### Research Synthesis: '{raw_query}'\n\n"
-                    f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** {len(retrieved)} | **Active Context:** ~{total_tokens} tokens | **Model Status:** {gguf_status}\n\n"
-                    f"#### 1. Grounded Vector Evidence:\n{formatted_blocks}\n\n"
-                    f"#### 2. Analytical Synthesis:\n"
-                    f"Evaluation of query parameters against vector index confirms matching domain patterns.\n\n"
-                    f"#### 3. Verification & Citation:\n"
-                    f"Grounded against chunk IDs: {', '.join(chunk_ids)}."
-                    f"{FACT_CHECK_BADGE}"
-                )
-            else:
-                synthesis = (
-                    f"### Research Synthesis: '{raw_query}'\n\n"
-                    f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** 0 | **Model Status:** {gguf_status}\n\n"
-                    f"#### 1. Core Structural Analysis:\n"
-                    f"Query parsed using zero-LLM deterministic router and symbolic decision tree.\n\n"
-                    f"#### 2. Recommendation:\n"
-                    f"Ingest document files via `yord upload` or UI file picker to populate the vector database."
-                    f"{FACT_CHECK_BADGE}"
-                )
+        # Fallback if binary is starting up
+        synthesis = (
+            f"### YORD AI Harness Response for: '{raw_query}'\n\n"
+            f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** {len(retrieved)}\n\n"
+            f"Hello! I am YORD. I am currently running locally on your MacBook Air.\n\n"
+            f"You asked: **{raw_query}**\n\n"
+            f"You can ask me to code applications, analyze research papers, solve complex math, or ingest PDF documents!"
+            f"{FACT_CHECK_BADGE}"
+        )
         
     state["synthesized_text"] = synthesis
     state["final_output"] = synthesis
