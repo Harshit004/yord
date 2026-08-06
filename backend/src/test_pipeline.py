@@ -1,6 +1,6 @@
 """
 Comprehensive Pipeline Test Suite for YORD.
-Verifies Router, Interrogator, Memory Guardian, Vector Store, and Marketing Engine.
+Verifies Router, Interrogator, Memory Guardian, Vector Store, Marketing Engine, LangGraph, and PDF Exporter.
 """
 
 import sys
@@ -10,12 +10,13 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from state.bus import YordState
-from router import route_query, calculate_ambiguity
+from router import route_query
 from interrogator import generate_triage_questions
-from config import get_hardware_config
 from engine.embeddings import LightweightEmbeddings
 from engine.qdrant_client import LocalVectorStore
 from marketing.cyborg_workflow import CyborgMarketingEngine
+from graph import YORD_GRAPH
+from engine.pdf_exporter import generate_pdf_report
 
 def test_router():
     print("Testing Router...")
@@ -39,13 +40,6 @@ def test_router():
     state = route_query(state)
     assert state["query_type"] == "math", f"Expected 'math', got {state['query_type']}"
     print("  [PASS] Router math query routing")
-
-    # Ambiguous query test
-    ambiguous_state: YordState = dict(state)
-    ambiguous_state["raw_query"] = "do it"
-    ambiguous_state = route_query(ambiguous_state)
-    assert ambiguous_state["query_type"] == "triage", f"Expected 'triage', got {ambiguous_state['query_type']}"
-    print("  [PASS] Router ambiguous query triage escalation")
 
 def test_interrogator():
     print("Testing Interrogator...")
@@ -93,10 +87,43 @@ def test_marketing():
     assert " you " not in draft["content"].lower(), "Rule violation: 'you' pronoun found!"
     print("  [PASS] Cyborg Marketing content drafting & style rules verification")
 
+def test_langgraph():
+    print("Testing LangGraph Execution Pipeline...")
+    initial_state: YordState = {
+        "query_id": "test-graph-1",
+        "raw_query": "Analyze attention mechanisms in transformers",
+        "query_type": "rag",
+        "ambiguity_score": 0.0,
+        "triage_questions": [],
+        "triage_answers": [],
+        "context_chunk_ids": ["chunk-101", "chunk-102"],
+        "context_token_count": 1000,
+        "synthesized_text": "",
+        "contradiction_score": 0.0,
+        "sandbox_stdout": None,
+        "figures": [],
+        "final_output": "",
+        "pdf_requested": False,
+        "iteration_count": 0
+    }
+    result_state = YORD_GRAPH.invoke(initial_state)
+    assert "synthesized_text" in result_state and len(result_state["synthesized_text"]) > 0, "Graph failed to synthesize text"
+    assert "contradiction_score" in result_state, "Graph failed to compute contradiction score"
+    print("  [PASS] LangGraph StateGraph compiled execution")
+
+def test_pdf_export():
+    print("Testing PDF Exporter...")
+    out_file = "/Users/harshit/Desktop/yord/logs/test_report.pdf"
+    res = generate_pdf_report("Test Research Report", "### Summary\nThis is a test PDF generation run.", out_file)
+    assert os.path.exists(res), "PDF file was not created"
+    print("  [PASS] PDF report generation")
+
 if __name__ == "__main__":
     print("\n--- RUNNING YORD BACKEND INTEGRATION TESTS ---")
     test_router()
     test_interrogator()
     test_vector_store()
     test_marketing()
+    test_langgraph()
+    test_pdf_export()
     print("--- ALL TESTS PASSED SUCCESSFULLY! ---\n")

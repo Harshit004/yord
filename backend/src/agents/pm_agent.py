@@ -5,7 +5,10 @@ RAM Impact: Negligible (<5MB). Pure control flow and prompt framing.
 """
 
 from typing import Dict, Any
-from ..state.bus import YordState
+try:
+    from ..state.bus import YordState
+except ImportError:
+    from state.bus import YordState
 
 def pm_plan_step(state: YordState) -> YordState:
     """

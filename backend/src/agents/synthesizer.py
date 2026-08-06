@@ -5,7 +5,10 @@ RAM Impact: Low to Moderate (<50MB). Does not load model weights directly into P
 """
 
 from typing import Dict, Any, List
-from ..state.bus import YordState
+try:
+    from ..state.bus import YordState
+except ImportError:
+    from state.bus import YordState
 
 def synthesize_response(state: YordState) -> YordState:
     """

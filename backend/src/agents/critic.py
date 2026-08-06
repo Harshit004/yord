@@ -6,7 +6,10 @@ RAM Impact: Negligible (<5MB). Pure rule-based & state validation.
 """
 
 from typing import Dict, Any, List
-from ..state.bus import YordState
+try:
+    from ..state.bus import YordState
+except ImportError:
+    from state.bus import YordState
 
 def evaluate_critic(state: YordState) -> YordState:
     """

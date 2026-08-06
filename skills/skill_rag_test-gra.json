@@ -1,0 +1,7 @@
+{
+  "query_type": "rag",
+  "pattern": "Analyze attention mechanisms in transformers",
+  "timestamp": "2026-08-06T05:27:18.552678",
+  "contradiction_score": 0.05,
+  "recommended_pipeline": "rag"
+}

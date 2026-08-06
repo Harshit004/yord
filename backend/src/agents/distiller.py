@@ -7,7 +7,10 @@ RAM Impact: Negligible (<2MB). File writing operations.
 import os
 import json
 from datetime import datetime
-from ..state.bus import YordState
+try:
+    from ..state.bus import YordState
+except ImportError:
+    from state.bus import YordState
 
 SKILLS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../skills"))
 
