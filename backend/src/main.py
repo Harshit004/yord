@@ -5,6 +5,7 @@ import json
 import psutil
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 
@@ -235,3 +236,8 @@ async def websocket_stream(websocket: WebSocket):
                 })
     except WebSocketDisconnect:
         pass
+
+# Serve Antigravity Glassmorphism Web App at root
+static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
