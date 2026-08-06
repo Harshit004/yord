@@ -15,5 +15,9 @@ target/
 
 # User data & storage runtime files
 data/qdrant_storage/test_collection/
+data/marketing_queue/*.json
+logs/*.log
+logs/*.pdf
 logs/memory_events.jsonl
 logs/trajectories/
+skills/skill_*.json
