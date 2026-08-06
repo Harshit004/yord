@@ -1,7 +1,7 @@
 """
 LangGraph StateGraph Workflow Definition for YORD.
 Orchestrates the sequential and conditional execution flow across:
-Router -> (Interrogator if ambiguous) -> PM Agent -> Synthesizer -> Critic -> (Distiller if valid) -> Final Output.
+Router -> (Interrogator if ambiguous) -> PM Agent -> Universal Subagent Dispatcher -> Synthesizer -> Critic -> (Distiller if valid) -> Final Output.
 RAM Impact: Negligible (<5MB). Pure Graph structure.
 """
 
@@ -16,6 +16,7 @@ try:
     from .agents.synthesizer import synthesize_response
     from .agents.critic import evaluate_critic
     from .agents.distiller import distill_skill
+    from .agents.subagent_dispatcher import dispatch_dynamic_subagent
 except ImportError:
     from state.bus import YordState
     from router import route_query
@@ -24,6 +25,7 @@ except ImportError:
     from agents.synthesizer import synthesize_response
     from agents.critic import evaluate_critic
     from agents.distiller import distill_skill
+    from agents.subagent_dispatcher import dispatch_dynamic_subagent
 
 def router_node(state: YordState) -> YordState:
     """Node wrapper for Zero-LLM Router."""
@@ -36,6 +38,10 @@ def interrogator_node(state: YordState) -> YordState:
 def pm_node(state: YordState) -> YordState:
     """Node wrapper for PM Agent planner."""
     return pm_plan_step(state)
+
+def subagent_dispatcher_node(state: YordState) -> YordState:
+    """Node wrapper for Universal Dynamic Subagent Dispatcher."""
+    return dispatch_dynamic_subagent(state)
 
 def synthesizer_node(state: YordState) -> YordState:
     """Node wrapper for Research Synthesizer."""
@@ -75,6 +81,7 @@ def build_yord_graph() -> StateGraph:
     workflow.add_node("router", router_node)
     workflow.add_node("interrogator", interrogator_node)
     workflow.add_node("pm_agent", pm_node)
+    workflow.add_node("subagent_dispatcher", subagent_dispatcher_node)
     workflow.add_node("synthesizer", synthesizer_node)
     workflow.add_node("critic", critic_node)
     workflow.add_node("distiller", distiller_node)
@@ -93,7 +100,8 @@ def build_yord_graph() -> StateGraph:
     )
 
     workflow.add_edge("interrogator", END)
-    workflow.add_edge("pm_agent", "synthesizer")
+    workflow.add_edge("pm_agent", "subagent_dispatcher")
+    workflow.add_edge("subagent_dispatcher", "synthesizer")
     workflow.add_edge("synthesizer", "critic")
 
     # Conditional Branching after Critic

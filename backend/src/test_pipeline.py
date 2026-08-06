@@ -1,6 +1,6 @@
 """
 Comprehensive Pipeline Test Suite for YORD.
-Verifies Router, Interrogator, Memory Guardian, Vector Store, Marketing Engine, LangGraph, and PDF Exporter.
+Verifies Router, Interrogator, Memory Guardian, Vector Store, Marketing Engine, LangGraph, PDF Exporter, and Universal Subagent Dispatcher.
 """
 
 import sys
@@ -17,6 +17,7 @@ from engine.qdrant_client import LocalVectorStore
 from marketing.cyborg_workflow import CyborgMarketingEngine
 from graph import YORD_GRAPH
 from engine.pdf_exporter import generate_pdf_report
+from agents.subagent_dispatcher import DISPATCHER
 
 def test_router():
     print("Testing Router...")
@@ -45,7 +46,7 @@ def test_interrogator():
     print("Testing Interrogator...")
     state: YordState = {
         "query_id": "test-2",
-        "raw_query": "do math",
+        "raw_query": "m",
         "query_type": "triage",
         "ambiguity_score": 0.8,
         "triage_questions": [],
@@ -63,6 +64,29 @@ def test_interrogator():
     state = generate_triage_questions(state)
     assert len(state["triage_questions"]) >= 2, "Expected at least 2 triage questions"
     print("  [PASS] Interrogator diagnostic question generation")
+
+def test_subagent_dispatcher():
+    print("Testing Universal Subagent Dispatcher...")
+    state: YordState = {
+        "query_id": "test-subagent-1",
+        "raw_query": "Analyze 16th-century Ottoman maritime law and Mediterranean trade routes",
+        "query_type": "rag",
+        "ambiguity_score": 0.0,
+        "triage_questions": [],
+        "triage_answers": [],
+        "context_chunk_ids": [],
+        "context_token_count": 0,
+        "synthesized_text": "",
+        "contradiction_score": 0.0,
+        "sandbox_stdout": None,
+        "figures": [],
+        "final_output": "",
+        "pdf_requested": False,
+        "iteration_count": 0
+    }
+    res = DISPATCHER.dispatch_subagent(state)
+    assert "Subagent Execution" in res["synthesized_text"], "Subagent failed to execute"
+    print("  [PASS] Universal Subagent Dispatcher dynamic persona execution")
 
 def test_vector_store():
     print("Testing Vector Store & Embeddings...")
@@ -122,6 +146,7 @@ if __name__ == "__main__":
     print("\n--- RUNNING YORD BACKEND INTEGRATION TESTS ---")
     test_router()
     test_interrogator()
+    test_subagent_dispatcher()
     test_vector_store()
     test_marketing()
     test_langgraph()
