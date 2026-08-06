@@ -237,6 +237,11 @@ async def websocket_stream(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
 
+# Serve static figures directory
+figures_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static/figures"))
+os.makedirs(figures_dir, exist_ok=True)
+app.mount("/figures", StaticFiles(directory=figures_dir), name="figures")
+
 # Serve Antigravity Glassmorphism Web App at root
 static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
 if os.path.exists(static_dir):
