@@ -18,7 +18,7 @@ script_mod! {
                     width: Fill
                     height: Fill
 
-                    // Left Panel (Archive)
+                    // Left Panel (Archive - Collapsible 280px)
                     left_panel := View {
                         width: 280.0
                         height: Fill
@@ -28,11 +28,18 @@ script_mod! {
                         padding: 12.0
                         spacing: 12.0
 
-                        Label {
-                            text: "Archive & History"
-                            draw_text.color: #00A8FF
-                            draw_text.text_style.font_size: 14.0
+                        View {
+                            width: Fill, height: Fit
+                            flow: Right
+                            align: {y: 0.5}
+
+                            Label {
+                                text: "Archive & History"
+                                draw_text.color: #00A8FF
+                                draw_text.text_style.font_size: 14.0
+                            }
                         }
+
                         View {
                             width: Fill, height: Fill
                             show_bg: true
@@ -49,7 +56,7 @@ script_mod! {
                         }
                     }
 
-                    // Center Panel (Synthesis & Chat)
+                    // Center Panel (Synthesis & Chat - Fluid)
                     center_panel := View {
                         width: Fill
                         height: Fill
@@ -57,10 +64,27 @@ script_mod! {
                         padding: 12.0
                         spacing: 12.0
 
-                        Label {
-                            text: "YORD AI Harness — Cognitive Synthesis"
-                            draw_text.color: #E0E0E0
-                            draw_text.text_style.font_size: 16.0
+                        // Header Bar with Toggle Buttons
+                        header_bar := View {
+                            width: Fill, height: Fit
+                            flow: Right
+                            align: {y: 0.5}
+                            spacing: 12.0
+
+                            btn_toggle_left := Button {
+                                text: "◧ Toggle Archive"
+                            }
+
+                            Label {
+                                width: Fill
+                                text: "YORD AI Harness — Cognitive Synthesis"
+                                draw_text.color: #E0E0E0
+                                draw_text.text_style.font_size: 16.0
+                            }
+
+                            btn_toggle_right := Button {
+                                text: "Toggle Telemetry ◨"
+                            }
                         }
 
                         chat_view := View {
@@ -82,11 +106,11 @@ script_mod! {
                         input_bar := TextInput {
                             width: Fill
                             height: Fit
-                            text: "Ask YORD to analyze papers, solve math, or draft marketing..."
+                            text: "Ask YORD to analyze papers, solve math, or process queries..."
                         }
                     }
 
-                    // Right Panel (Transparency & Metrics)
+                    // Right Panel (Transparency & Metrics - Collapsible 320px)
                     right_panel := View {
                         width: 320.0
                         height: Fill
@@ -133,7 +157,7 @@ pub struct App {
 
 impl MatchEvent for App {
     fn handle_startup(&mut self, _cx: &mut Cx) {
-        log!("YORD UI main window loaded.");
+        log!("YORD UI main window loaded with collapsible sidebars.");
     }
 }
 
