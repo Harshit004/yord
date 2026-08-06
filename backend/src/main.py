@@ -3,9 +3,9 @@ import os
 import uuid
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict
 
 try:
     from .state.bus import YordState
@@ -16,6 +16,7 @@ try:
     from .graph import YORD_GRAPH
     from .engine.ingestion import DocumentIngestionEngine
     from .engine.pdf_exporter import generate_pdf_report
+    from .engine.skill_installer import SKILL_INSTALLER
 except ImportError:
     from state.bus import YordState
     from router import route_query
@@ -25,14 +26,22 @@ except ImportError:
     from graph import YORD_GRAPH
     from engine.ingestion import DocumentIngestionEngine
     from engine.pdf_exporter import generate_pdf_report
+    from engine.skill_installer import SKILL_INSTALLER
 
 app = FastAPI(title="YORD Local AI Harness", description="Local-first 12M Token Research Harness Backend")
 
 ingestion_engine = DocumentIngestionEngine()
 
+# Session-level PDF Artifact Registry: session_id -> List[Dict[str, str]]
+SESSION_PDF_REGISTRY: Dict[str, List[Dict[str, str]]] = {}
+
 class QueryRequest(BaseModel):
+    session_id: Optional[str] = "default_session"
     query: str
     export_pdf: Optional[bool] = False
+
+class SkillInstallRequest(BaseModel):
+    query_or_name: str
 
 @app.on_event("startup")
 async def startup_event():
@@ -51,7 +60,24 @@ async def health_check():
 async def process_query(req: QueryRequest):
     """
     Executes a query through the LangGraph research state machine.
+    Tracks per-chat PDF artifacts and handles skill installation commands.
     """
+    session_id = req.session_id or "default_session"
+    if session_id not in SESSION_PDF_REGISTRY:
+        SESSION_PDF_REGISTRY[session_id] = []
+
+    # Check if query is an explicit skill installation prompt
+    if req.query.lower().startswith("install skill") or req.query.lower().startswith("find skill"):
+        install_res = SKILL_INSTALLER.search_and_install(req.query)
+        return JSONResponse(content={
+            "query_id": str(uuid.uuid4()),
+            "raw_query": req.query,
+            "query_type": "distill",
+            "synthesized_text": f"### Skill Installation Result\n\n- **Status:** {install_res['status'].upper()}\n- **Skill Name:** {install_res['skill_name']}\n- **Path:** {install_res['path']}",
+            "contradiction_score": 0.0,
+            "pdf_artifacts": SESSION_PDF_REGISTRY[session_id]
+        })
+
     initial_state: YordState = {
         "query_id": str(uuid.uuid4()),
         "raw_query": req.query,
@@ -67,18 +93,45 @@ async def process_query(req: QueryRequest):
         "figures": [],
         "final_output": "",
         "pdf_requested": req.export_pdf,
+        "pdf_artifacts": SESSION_PDF_REGISTRY[session_id],
         "iteration_count": 0
     }
     
     final_state = YORD_GRAPH.invoke(initial_state)
     
-    pdf_path = None
+    # Generate PDF Report if requested or generated during synthesis
     if req.export_pdf:
-        pdf_out = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../logs/report_{final_state['query_id'][:8]}.pdf"))
-        pdf_path = generate_pdf_report(f"Research: {req.query}", final_state.get("synthesized_text", ""), pdf_out)
-        final_state["pdf_path"] = pdf_path
+        pdf_name = f"Report_{final_state['query_id'][:8]}.pdf"
+        pdf_out = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../logs/{pdf_name}"))
+        pdf_path = generate_pdf_report(f"Research: {req.query[:40]}", final_state.get("synthesized_text", ""), pdf_out)
+        
+        artifact_entry = {
+            "title": f"Report: {req.query[:30]}...",
+            "filename": pdf_name,
+            "path": pdf_path,
+            "url": f"/api/pdf/download?path={pdf_path}"
+        }
+        SESSION_PDF_REGISTRY[session_id].append(artifact_entry)
+        final_state["pdf_artifacts"] = SESSION_PDF_REGISTRY[session_id]
         
     return JSONResponse(content=final_state)
+
+@app.post("/api/skills/install")
+async def install_skill_endpoint(req: SkillInstallRequest):
+    """Antigravity-style endpoint for finding & installing new skills."""
+    res = SKILL_INSTALLER.search_and_install(req.query_or_name)
+    return JSONResponse(content=res)
+
+@app.get("/api/pdf/download")
+async def download_pdf_artifact(path: str):
+    """
+    Downloads a PDF artifact file with native file save headers.
+    """
+    abs_path = os.path.abspath(path)
+    if os.path.exists(abs_path) and abs_path.endswith(".pdf"):
+        filename = os.path.basename(abs_path)
+        return FileResponse(abs_path, filename=filename, media_type="application/pdf")
+    return JSONResponse(status_code=404, content={"error": "PDF file not found"})
 
 @app.post("/api/upload")
 async def upload_document(file: UploadFile = File(...)):
@@ -111,6 +164,10 @@ async def websocket_stream(websocket: WebSocket):
             data = await websocket.receive_text()
             payload = json.loads(data)
             raw_query = payload.get("query", "")
+            session_id = payload.get("session_id", "default_session")
+            
+            if session_id not in SESSION_PDF_REGISTRY:
+                SESSION_PDF_REGISTRY[session_id] = []
             
             state: YordState = {
                 "query_id": str(uuid.uuid4()),
@@ -127,6 +184,7 @@ async def websocket_stream(websocket: WebSocket):
                 "figures": [],
                 "final_output": "",
                 "pdf_requested": False,
+                "pdf_artifacts": SESSION_PDF_REGISTRY[session_id],
                 "iteration_count": 0
             }
             
@@ -147,7 +205,8 @@ async def websocket_stream(websocket: WebSocket):
                     "event": "graph_execution",
                     "status": "completed",
                     "synthesized_text": final_state.get("synthesized_text", ""),
-                    "contradiction_score": final_state.get("contradiction_score", 0.0)
+                    "contradiction_score": final_state.get("contradiction_score", 0.0),
+                    "pdf_artifacts": SESSION_PDF_REGISTRY[session_id]
                 })
     except WebSocketDisconnect:
         pass

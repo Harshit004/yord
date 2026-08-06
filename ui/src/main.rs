@@ -51,9 +51,6 @@ script_mod! {
                                 draw_text.text_style.font_size: 12.0
                             }
                         }
-                        Button {
-                            text: "Export PDF Report"
-                        }
                     }
 
                     // Center Panel (Synthesis & Chat - Fluid)
@@ -83,7 +80,7 @@ script_mod! {
                             }
 
                             btn_toggle_right := Button {
-                                text: "Toggle Telemetry ◨"
+                                text: "Toggle Telemetry & Artifacts ◨"
                             }
                         }
 
@@ -110,7 +107,7 @@ script_mod! {
                         }
                     }
 
-                    // Right Panel (Transparency & Metrics - Collapsible 320px)
+                    // Right Panel (Transparency & Artifacts - Collapsible 320px)
                     right_panel := View {
                         width: 320.0
                         height: Fill
@@ -121,9 +118,44 @@ script_mod! {
                         spacing: 12.0
 
                         Label {
-                            text: "Transparency & Guardian"
+                            text: "Telemetry & Artifacts"
                             draw_text.color: #00A8FF
                             draw_text.text_style.font_size: 14.0
+                        }
+
+                        // Per-Chat Session PDF Artifacts Section
+                        pdf_artifacts_section := View {
+                            width: Fill, height: 180.0
+                            show_bg: true
+                            draw_bg.color: #141414
+                            padding: 8.0
+                            flow: Down
+                            spacing: 6.0
+
+                            Label {
+                                text: "📄 Session PDF Reports"
+                                draw_text.color: #E0E0E0
+                                draw_text.text_style.font_size: 12.0
+                            }
+
+                            View {
+                                width: Fill, height: Fit
+                                flow: Right
+                                spacing: 8.0
+
+                                Label {
+                                    width: Fill
+                                    text: "📑 Report_Latest.pdf"
+                                    draw_text.color: #00A8FF
+                                    draw_text.text_style.font_size: 11.0
+                                }
+                                Button {
+                                    text: "👁️ View"
+                                }
+                                Button {
+                                    text: "📥 Save"
+                                }
+                            }
                         }
 
                         Label { text: "Retrieved Vector Chunks: 0" draw_text.color: #E0E0E0 }
@@ -157,7 +189,7 @@ pub struct App {
 
 impl MatchEvent for App {
     fn handle_startup(&mut self, _cx: &mut Cx) {
-        log!("YORD UI main window loaded with collapsible sidebars.");
+        log!("YORD UI main window loaded with PDF Artifact Manager.");
     }
 }
 
