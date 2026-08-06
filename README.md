@@ -3,8 +3,104 @@
 
 ---
 
+# PART XV: DEVELOPER QUICKSTART & IMPLEMENTATION DIRECTORY
+
+## System Architecture
+
+```
+                          ┌──────────────────────────┐
+                          │   Makepad UI (Rust)      │
+                          │   3-Panel Native Window  │
+                          └─────────────┬────────────┘
+                                        │ WebSocket / REST
+                          ┌─────────────▼────────────┐
+                          │   FastAPI Server (Py3.13)│
+                          └─────────────┬────────────┘
+                                        │
+             ┌──────────────────────────┼──────────────────────────┐
+             │                          │                          │
+┌────────────▼───────────┐  ┌───────────▼───────────┐  ┌───────────▼───────────┐
+│ Zero-LLM Router        │  │ Interrogation Node    │  │ Memory Guardian       │
+│ <5ms Query Classifier  │  │ Forced-Choice Questions│  │ psutil 75/85/92% RAM  │
+└────────────┬───────────┘  └───────────┬───────────┘  └───────────┬───────────┘
+             │                          │                          │
+             └──────────────────────────┼──────────────────────────┘
+                                        │
+             ┌──────────────────────────┼──────────────────────────┐
+             │                          │                          │
+┌────────────▼───────────┐  ┌───────────▼───────────┐  ┌───────────▼───────────┐
+│ Vector Engine          │  │ Intelligence Nodes    │  │ Cyborg Marketing      │
+│ mmap array Qdrant      │  │ PM, Synthesizer,      │  │ Human-gated drafts    │
+│ Cosine Search          │  │ Adversarial Critic    │  │ No broetry / em-dashes│
+└────────────────────────┘  └───────────────────────┘  └───────────────────────┘
+```
+
+---
+
+## Directory Component Map
+
+```
+/Users/harshit/Desktop/yord/
+├── backend/
+│   ├── pyproject.toml        # uv package config (Python 3.13)
+│   ├── src/
+│   │   ├── main.py           # FastAPI entry & WebSocket server
+│   │   ├── router.py         # Deterministic Zero-LLM query router
+│   │   ├── interrogator.py   # Interrogation Node (forced-choice diagnostic tree)
+│   │   ├── config.py         # Dynamic hardware specs & RAM limits
+│   │   ├── state/
+│   │   │   ├── bus.py        # YordState TypedDict schema
+│   │   │   └── memory_guardian.py # RAM monitor daemon
+│   │   ├── agents/
+│   │   │   ├── pm_agent.py   # LangGraph execution strategy planner
+│   │   │   ├── synthesizer.py # Research synthesizer node
+│   │   │   ├── critic.py     # Adversarial Devil's Advocate
+│   │   │   └── distiller.py  # Continuous learning / skill distiller
+│   │   ├── engine/
+│   │   │   ├── qdrant_client.py # File-backed mmap vector storage
+│   │   │   ├── embeddings.py    # 768-dim CPU embedding generator
+│   │   │   └── ingestion.py     # MarkItDown document chunker
+│   │   ├── marketing/
+│   │   │   └── cyborg_workflow.py # Marketing draft pipeline
+│   │   └── test_pipeline.py  # Integration test suite
+├── ui/
+│   ├── Cargo.toml            # Rust Makepad workspace config
+│   └── src/
+│       ├── main.rs           # 120fps native GPU desktop app
+│       └── ipc.rs            # Backend communication client
+└── skills/
+    ├── find-skills/          # Skills discovery package
+    └── ponytail/             # Ponytail anti-bloat engineering ladder
+```
+
+---
+
+## How to Run YORD
+
+### 1. Run Backend Server (Python FastAPI)
+```bash
+cd ~/Desktop/yord/backend
+uv run uvicorn src.main:app --reload --port 8000
+```
+Verify health status at: `http://localhost:8000/health`
+
+### 2. Run Desktop UI (Rust Makepad)
+```bash
+cd ~/Desktop/yord/ui
+cargo run
+```
+
+### 3. Run Integration Tests
+```bash
+cd ~/Desktop/yord/backend
+uv run python -m src.test_pipeline
+```
+
+---
+
 # TABLE OF CONTENTS & NAVIGATION ROADMAP
 
+- [PART XV: DEVELOPER QUICKSTART & IMPLEMENTATION DIRECTORY](#part-xv-developer-quickstart--implementation-directory)
 - [CHAPTER 1: The Hardware Ceiling & The 12M Context Crisis](#chapter-1-the-hardware-ceiling--the-12m-context-crisis)
 - [CHAPTER 2: Vector Spaces & The Geometry of Meaning](#chapter-2-vector-spaces--the-geometry-of-meaning)
 - [CHAPTER 3: Self-Attention & Vector Search Mechanics](#chapter-3-self-attention--vector-search-mechanics)

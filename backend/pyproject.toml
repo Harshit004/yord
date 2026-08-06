@@ -1,0 +1,30 @@
+[project]
+name = "yord-backend"
+version = "0.1.0"
+description = "YORD Local AI Harness Backend"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "langgraph",
+    "psutil",
+    "onnxruntime<=1.21.0",
+    "fpdf2",
+    "markdown",
+    "sympy",
+    "scipy",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "networkx",
+    "markitdown",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

@@ -1,0 +1,15 @@
+# Environment & Build artifacts
+.venv/
+**/__pycache__/
+*.pyc
+target/
+*.log
+
+# System files
+.DS_Store
+*.tmp
+
+# User data & storage runtime files
+data/qdrant_storage/test_collection/
+logs/memory_events.jsonl
+logs/trajectories/
