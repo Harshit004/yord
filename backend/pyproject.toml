@@ -20,6 +20,7 @@ dependencies = [
     "seaborn",
     "networkx",
     "markitdown",
+    "llama-cpp-python",
 ]
 
 [build-system]

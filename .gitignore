@@ -4,6 +4,8 @@
 *.pyc
 target/
 *.log
+models/
+*.gguf
 
 # Root formatting scripts
 /*.py

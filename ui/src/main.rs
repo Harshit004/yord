@@ -1,6 +1,7 @@
 pub use makepad_widgets;
 
 use makepad_widgets::*;
+use std::process::Command;
 
 mod ipc;
 
@@ -149,10 +150,10 @@ script_mod! {
                                     draw_text.color: #00A8FF
                                     draw_text.text_style.font_size: 11.0
                                 }
-                                Button {
+                                btn_view_pdf := Button {
                                     text: "👁️ View"
                                 }
-                                Button {
+                                btn_save_pdf := Button {
                                     text: "📥 Save"
                                 }
                             }
@@ -185,6 +186,14 @@ script_mod! {
 #[derive(Script, ScriptHook)]
 pub struct App {
     #[live] ui: WidgetRef,
+}
+
+impl App {
+    pub fn open_pdf_preview(pdf_path: &str) {
+        if cfg!(target_os = "macos") {
+            let _ = Command::new("open").arg(pdf_path).spawn();
+        }
+    }
 }
 
 impl MatchEvent for App {
