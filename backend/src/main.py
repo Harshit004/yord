@@ -16,7 +16,6 @@ try:
     from .graph import YORD_GRAPH
     from .engine.ingestion import DocumentIngestionEngine
     from .engine.pdf_exporter import generate_pdf_report
-    from .marketing.cyborg_workflow import CyborgMarketingEngine
 except ImportError:
     from state.bus import YordState
     from router import route_query
@@ -26,20 +25,14 @@ except ImportError:
     from graph import YORD_GRAPH
     from engine.ingestion import DocumentIngestionEngine
     from engine.pdf_exporter import generate_pdf_report
-    from marketing.cyborg_workflow import CyborgMarketingEngine
 
 app = FastAPI(title="YORD Local AI Harness", description="Local-first 12M Token Research Harness Backend")
 
 ingestion_engine = DocumentIngestionEngine()
-marketing_engine = CyborgMarketingEngine()
 
 class QueryRequest(BaseModel):
     query: str
     export_pdf: Optional[bool] = False
-
-class MarketingRequest(BaseModel):
-    topic: str
-    platform: Optional[str] = "LinkedIn"
 
 @app.on_event("startup")
 async def startup_event():
@@ -106,20 +99,6 @@ async def upload_document(file: UploadFile = File(...)):
         "chunks_indexed": chunk_count,
         "status": "success"
     })
-
-@app.post("/api/marketing/draft")
-async def generate_marketing_draft(req: MarketingRequest):
-    """
-    Generates human-gated marketing content adhering to strict writing rules.
-    """
-    draft = marketing_engine.create_draft(req.topic, req.platform)
-    return JSONResponse(content=draft)
-
-@app.get("/api/marketing/pending")
-async def list_pending_marketing():
-    """Lists queued marketing drafts awaiting publication."""
-    drafts = marketing_engine.list_pending_drafts()
-    return JSONResponse(content={"drafts": drafts})
 
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket):

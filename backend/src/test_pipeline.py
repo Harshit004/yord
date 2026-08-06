@@ -1,6 +1,6 @@
 """
 Comprehensive Pipeline Test Suite for YORD.
-Verifies Router, Interrogator, Memory Guardian, Vector Store, Marketing Engine, LangGraph, PDF Exporter, and Universal Subagent Dispatcher.
+Verifies Router, Interrogator, Memory Guardian, Vector Store, LangGraph, PDF Exporter, and Universal Subagent Dispatcher.
 """
 
 import sys
@@ -14,7 +14,6 @@ from router import route_query
 from interrogator import generate_triage_questions
 from engine.embeddings import LightweightEmbeddings
 from engine.qdrant_client import LocalVectorStore
-from marketing.cyborg_workflow import CyborgMarketingEngine
 from graph import YORD_GRAPH
 from engine.pdf_exporter import generate_pdf_report
 from agents.subagent_dispatcher import DISPATCHER
@@ -102,15 +101,6 @@ def test_vector_store():
     assert results[0]["id"] == "doc-1", "Expected doc-1 match"
     print("  [PASS] Vector embedding & Cosine similarity search")
 
-def test_marketing():
-    print("Testing Marketing Engine...")
-    engine = CyborgMarketingEngine()
-    draft = engine.create_draft("Local AI context optimization", platform="LinkedIn")
-    assert "draft_id" in draft, "Expected draft_id"
-    assert "—" not in draft["content"], "Rule violation: em dash found!"
-    assert " you " not in draft["content"].lower(), "Rule violation: 'you' pronoun found!"
-    print("  [PASS] Cyborg Marketing content drafting & style rules verification")
-
 def test_langgraph():
     print("Testing LangGraph Execution Pipeline...")
     initial_state: YordState = {
@@ -148,7 +138,6 @@ if __name__ == "__main__":
     test_interrogator()
     test_subagent_dispatcher()
     test_vector_store()
-    test_marketing()
     test_langgraph()
     test_pdf_export()
     print("--- ALL TESTS PASSED SUCCESSFULLY! ---\n")

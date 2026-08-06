@@ -2,7 +2,7 @@
 """
 YORD Command-Line Interface (CLI).
 Provides direct terminal access to YORD research query execution, document ingestion,
-marketing content generation, and system health status.
+and system health status.
 """
 
 import sys
@@ -58,20 +58,6 @@ def cmd_ingest(args):
     except Exception as e:
         print(f"Error ingesting file: {e}")
 
-def cmd_marketing(args):
-    print(f"\n[YORD Cyborg Marketing] Drafting content for topic: '{args.topic}'...")
-    try:
-        payload = {"topic": args.topic, "platform": args.platform}
-        r = requests.post(f"{BASE_URL}/api/marketing/draft", json=payload)
-        res = r.json()
-        print("\n--- GENERATED DRAFT (PENDING HUMAN APPROVAL) ---")
-        print(f"Draft ID: {res['draft_id']}")
-        print(f"Platform: {res['platform']}\n")
-        print(res['content'])
-        print(f"\nSaved to approval queue: {res['saved_path']}")
-    except Exception as e:
-        print(f"Error generating marketing content: {e}")
-
 def main():
     parser = argparse.ArgumentParser(description="YORD Local AI Harness CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
@@ -88,11 +74,6 @@ def main():
     ingest_parser = subparsers.add_parser("ingest", help="Ingest document file into vector database")
     ingest_parser.add_argument("file", type=str, help="Path to PDF, TXT, or Markdown file")
 
-    # Marketing command
-    mkt_parser = subparsers.add_parser("marketing", help="Draft marketing content adhering to strict rules")
-    mkt_parser.add_argument("topic", type=str, help="Topic for marketing content")
-    mkt_parser.add_argument("--platform", type=str, default="LinkedIn", help="Target platform (default: LinkedIn)")
-
     args = parser.parse_args()
 
     if not args.command:
@@ -105,8 +86,6 @@ def main():
         cmd_query(args)
     elif args.command == "ingest":
         cmd_ingest(args)
-    elif args.command == "marketing":
-        cmd_marketing(args)
 
 if __name__ == "__main__":
     main()

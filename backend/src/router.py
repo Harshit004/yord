@@ -8,7 +8,6 @@ except ImportError:
 # Keyword lists for specialized execution engines
 MATH_KEYWORDS = {"sympy", "equation", "calculate", "integrate", "derivative", "matrix", "calculus"}
 CODE_KEYWORDS = {"def ", "fn ", "struct", "impl", "function", "debug", "python", "rust", "javascript", "bug"}
-MARKETING_KEYWORDS = {"post", "engage", "campaign", "marketing", "linkedin", "twitter"}
 DISTILL_KEYWORDS = {"distill", "extract skill", "save pattern"}
 
 def calculate_ambiguity(query: str, query_type: str) -> float:
@@ -20,21 +19,20 @@ def calculate_ambiguity(query: str, query_type: str) -> float:
     words = [w for w in re.findall(r'\w+', query.lower())]
     word_count = len(words)
     
-    # 1. Extremely short single-word queries are genuinely ambiguous (e.g., "math", "help")
+    # Extremely short single-word queries are genuinely ambiguous (e.g., "math", "help")
     if word_count < 2:
         return 0.8
         
-    # 2. General multi-word open-domain queries (>= 4 words) are well-formed open prompts
+    # General multi-word open-domain queries (>= 3 words) are well-formed open prompts
     if query_type == "rag":
         if word_count >= 3:
             return 0.1  # Low ambiguity, proceed directly to open-domain synthesis
         return 0.4
 
-    # 3. For specialized keywords, check overlap
+    # For specialized keywords, check overlap
     domain_keywords = set()
     if query_type == "math": domain_keywords = MATH_KEYWORDS
     elif query_type == "code": domain_keywords = CODE_KEYWORDS
-    elif query_type == "marketing": domain_keywords = MARKETING_KEYWORDS
     elif query_type == "distill": domain_keywords = DISTILL_KEYWORDS
     
     overlap = len(set(words).intersection(domain_keywords))
@@ -58,8 +56,6 @@ def route_query(state: YordState) -> YordState:
         query_type = "math"
     elif any(kw in query for kw in CODE_KEYWORDS):
         query_type = "code"
-    elif any(kw in query for kw in MARKETING_KEYWORDS):
-        query_type = "marketing"
     elif any(kw in query for kw in DISTILL_KEYWORDS):
         query_type = "distill"
         

@@ -1,8 +1,0 @@
-{
-  "draft_id": "draft_1785897317",
-  "platform": "LinkedIn",
-  "topic": "Local AI context optimization",
-  "content": "There's a pattern we keep seeing in AI system design. Most teams try to throw massive hardware at context bloat. We decided to measure what actually happens under memory pressure. The math adds up. But the performance? It doesn't.\n\nWhile analyzing query benchmarks, we noticed that dynamic context pruning keeps active RAM under 4GB. By replacing raw quadratic attention with vector-gated HNSW indices, we process complex research tasks locally. This shift changes how we think about local intelligence without relying on cloud APIs.",
-  "created_at": "2026-08-05T08:05:17.700384",
-  "status": "pending_user_approval"
-}
