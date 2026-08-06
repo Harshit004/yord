@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[allow(dead_code)]
 pub struct IpcClient {
     pub base_url: String,
@@ -19,5 +21,24 @@ impl IpcClient {
 
     pub fn query_url(&self) -> String {
         format!("{}/api/query", self.base_url)
+    }
+
+    pub fn send_query(&self, query_text: &str) -> Result<String, String> {
+        let mut map = HashMap::new();
+        map.insert("query", query_text);
+        map.insert("session_id", "default_session");
+
+        match ureq::post(&self.query_url())
+            .send_json(map) {
+                Ok(resp) => {
+                    if let Ok(json) = resp.into_json::<serde_json::Value>() {
+                        if let Some(text) = json.get("synthesized_text").and_then(|v| v.as_str()) {
+                            return Ok(text.to_string());
+                        }
+                    }
+                    Ok("Response received from YORD backend.".to_string())
+                }
+                Err(e) => Err(format!("Backend error: {}", e))
+            }
     }
 }

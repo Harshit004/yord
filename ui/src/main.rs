@@ -2,6 +2,7 @@ pub use makepad_widgets;
 
 use makepad_widgets::*;
 use std::process::Command;
+use ipc::IpcClient;
 
 mod ipc;
 
@@ -100,17 +101,33 @@ script_mod! {
                             flow: Down
                             spacing: 8.0
                             
-                            Label {
+                            status_label := Label {
                                 text: "System Ready. Enter a research request below..."
                                 draw_text.color: #00E676
                                 draw_text.text_style.font_size: 12.0
                             }
+                            
+                            response_label := Label {
+                                text: "Awaiting input query..."
+                                draw_text.color: #CCCCCC
+                                draw_text.text_style.font_size: 13.0
+                            }
                         }
                         
-                        input_bar := TextInput {
-                            width: Fill
-                            height: Fit
-                            text: "Ask YORD to analyze papers, solve math, or process queries..."
+                        input_container := View {
+                            width: Fill, height: Fit
+                            flow: Right
+                            spacing: 8.0
+
+                            input_bar := TextInput {
+                                width: Fill
+                                height: Fit
+                                text: "Hi who are you?"
+                            }
+
+                            btn_send := Button {
+                                text: "Send ➔"
+                            }
                         }
                     }
 
@@ -200,11 +217,49 @@ impl App {
             let _ = Command::new("open").arg(pdf_path).spawn();
         }
     }
+
+    pub fn handle_query_submission(&mut self, cx: &mut Cx) {
+        let input_widget = self.ui.text_input(cx, &[id!(input_bar)]);
+        let user_query = input_widget.text();
+
+        if !user_query.trim().is_empty() {
+            log!("Submitting query to YORD backend: {}", user_query);
+            self.ui.label(cx, &[id!(status_label)]).set_text(cx, &format!("Processing: '{}'...", user_query));
+
+            let ipc = IpcClient::new();
+            match ipc.send_query(&user_query) {
+                Ok(synthesized_output) => {
+                    self.ui.label(cx, &[id!(status_label)]).set_text(cx, "Synthesis Complete");
+                    self.ui.label(cx, &[id!(response_label)]).set_text(cx, &synthesized_output);
+                }
+                Err(err) => {
+                    self.ui.label(cx, &[id!(status_label)]).set_text(cx, "Error Querying Backend");
+                    self.ui.label(cx, &[id!(response_label)]).set_text(cx, &format!("Backend connection error: {}", err));
+                }
+            }
+        }
+    }
 }
 
 impl MatchEvent for App {
     fn handle_startup(&mut self, _cx: &mut Cx) {
-        log!("YORD UI main window loaded with Ingest Document Button & RAM Telemetry.");
+        log!("YORD UI main window loaded with active submission handlers.");
+    }
+
+    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
+        if self.ui.button(cx, &[id!(btn_send)]).clicked(actions) {
+            self.handle_query_submission(cx);
+        }
+
+        let input_widget = self.ui.text_input(cx, &[id!(input_bar)]);
+        if input_widget.returned(actions).is_some() {
+            self.handle_query_submission(cx);
+        }
+
+        if self.ui.button(cx, &[id!(btn_view_pdf)]).clicked(actions) {
+            let log_pdf = "/Users/harshit/Desktop/yord/logs/Report_Latest.pdf";
+            Self::open_pdf_preview(log_pdf);
+        }
     }
 }
 
