@@ -18,11 +18,15 @@ def distill_skill(state: YordState) -> YordState:
     """
     Distills high-confidence research runs into reusable skill files.
     Triggers when contradiction_score < 0.2 and synthesis completed cleanly.
+    Populates final_output state variable.
     """
     contradiction_score = state.get("contradiction_score", 1.0)
     query_id = state.get("query_id", "unknown")
     query_type = state.get("query_type", "general")
     raw_query = state.get("raw_query", "")
+    
+    # Guarantee final_output is populated with synthesized_text
+    state["final_output"] = state.get("synthesized_text", "")
     
     if contradiction_score <= 0.2 and raw_query:
         os.makedirs(SKILLS_DIR, exist_ok=True)

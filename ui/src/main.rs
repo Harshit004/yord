@@ -250,8 +250,15 @@ impl App {
         }
 
         self.ui.label(cx, &[id!(status_label)]).set_text(cx, "⏳ SYNTHESIZING RESEARCH ANSWER...");
+        self.ui.label(cx, &[id!(status_label)]).redraw(cx);
+
         self.ui.label(cx, &[id!(user_msg_label)]).set_text(cx, &format!("💬 You: {}", user_query));
+        self.ui.label(cx, &[id!(user_msg_label)]).redraw(cx);
+
         self.ui.label(cx, &[id!(response_label)]).set_text(cx, "Query dispatched to local engine...");
+        self.ui.label(cx, &[id!(response_label)]).redraw(cx);
+
+        self.ui.redraw(cx);
 
         let tx = self.tx.clone();
         let query_clone = user_query.clone();
@@ -279,16 +286,24 @@ impl App {
                 match msg {
                     IpcMessage::Processing(status) => {
                         self.ui.label(cx, &[id!(status_label)]).set_text(cx, &status);
+                        self.ui.label(cx, &[id!(status_label)]).redraw(cx);
                     }
                     IpcMessage::Completed(text) => {
                         self.ui.label(cx, &[id!(status_label)]).set_text(cx, "● SYNTHESIS COMPLETE — Zero Sycophancy Verified");
+                        self.ui.label(cx, &[id!(status_label)]).redraw(cx);
+
                         self.ui.label(cx, &[id!(response_label)]).set_text(cx, &text);
+                        self.ui.label(cx, &[id!(response_label)]).redraw(cx);
                     }
                     IpcMessage::Error(err) => {
                         self.ui.label(cx, &[id!(status_label)]).set_text(cx, "⚠️ BACKEND CONNECTION ERROR");
+                        self.ui.label(cx, &[id!(status_label)]).redraw(cx);
+
                         self.ui.label(cx, &[id!(response_label)]).set_text(cx, &format!("Error: {}", err));
+                        self.ui.label(cx, &[id!(response_label)]).redraw(cx);
                     }
                 }
+                self.ui.redraw(cx);
             }
         }
     }
