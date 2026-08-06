@@ -1,9 +1,11 @@
 import asyncio
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+import os
 import uuid
 import json
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Optional
 
 try:
     from .state.bus import YordState
@@ -11,32 +13,42 @@ try:
     from .interrogator import generate_triage_questions
     from .state.memory_guardian import memory_guardian_task
     from .config import SYSTEM_CONFIG
+    from .graph import YORD_GRAPH
+    from .engine.ingestion import DocumentIngestionEngine
+    from .engine.pdf_exporter import generate_pdf_report
+    from .marketing.cyborg_workflow import CyborgMarketingEngine
 except ImportError:
     from state.bus import YordState
     from router import route_query
     from interrogator import generate_triage_questions
     from state.memory_guardian import memory_guardian_task
     from config import SYSTEM_CONFIG
+    from graph import YORD_GRAPH
+    from engine.ingestion import DocumentIngestionEngine
+    from engine.pdf_exporter import generate_pdf_report
+    from marketing.cyborg_workflow import CyborgMarketingEngine
 
-app = FastAPI(title="YORD Local AI Harness", description="Minimal viable backend for YORD")
+app = FastAPI(title="YORD Local AI Harness", description="Local-first 12M Token Research Harness Backend")
+
+ingestion_engine = DocumentIngestionEngine()
+marketing_engine = CyborgMarketingEngine()
 
 class QueryRequest(BaseModel):
     query: str
+    export_pdf: Optional[bool] = False
+
+class MarketingRequest(BaseModel):
+    topic: str
+    platform: Optional[str] = "LinkedIn"
 
 @app.on_event("startup")
 async def startup_event():
-    """
-    Initializes background tasks on startup.
-    RAM Impact: Minimal. Spawns asyncio tasks.
-    """
+    """Starts background RAM monitoring on server boot."""
     asyncio.create_task(memory_guardian_task())
 
 @app.get("/health")
 async def health_check():
-    """
-    Standard health check endpoint.
-    Includes hardware config.
-    """
+    """Health check endpoint returning dynamic hardware constraints."""
     return JSONResponse(content={
         "status": "ok",
         "hardware": SYSTEM_CONFIG
@@ -45,10 +57,9 @@ async def health_check():
 @app.post("/api/query")
 async def process_query(req: QueryRequest):
     """
-    REST endpoint for simple non-streaming queries.
-    RAM Impact: Low. Creates initial state and passes through router.
+    Executes a query through the LangGraph research state machine.
     """
-    state: YordState = {
+    initial_state: YordState = {
         "query_id": str(uuid.uuid4()),
         "raw_query": req.query,
         "query_type": "rag",
@@ -62,29 +73,64 @@ async def process_query(req: QueryRequest):
         "sandbox_stdout": None,
         "figures": [],
         "final_output": "",
-        "pdf_requested": False,
+        "pdf_requested": req.export_pdf,
         "iteration_count": 0
     }
     
-    state = route_query(state)
+    final_state = YORD_GRAPH.invoke(initial_state)
     
-    if state["query_type"] == "triage":
-        state = generate_triage_questions(state)
+    pdf_path = None
+    if req.export_pdf:
+        pdf_out = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../logs/report_{final_state['query_id'][:8]}.pdf"))
+        pdf_path = generate_pdf_report(f"Research: {req.query}", final_state.get("synthesized_text", ""), pdf_out)
+        final_state["pdf_path"] = pdf_path
         
-    return JSONResponse(content=state)
+    return JSONResponse(content=final_state)
+
+@app.post("/api/upload")
+async def upload_document(file: UploadFile = File(...)):
+    """
+    Uploads and indexes a document (PDF, Markdown, TXT) into the local vector database.
+    """
+    upload_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data/user_uploads"))
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    save_path = os.path.join(upload_dir, file.filename)
+    with open(save_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+        
+    chunk_count = ingestion_engine.process_file(save_path)
+    return JSONResponse(content={
+        "filename": file.filename,
+        "chunks_indexed": chunk_count,
+        "status": "success"
+    })
+
+@app.post("/api/marketing/draft")
+async def generate_marketing_draft(req: MarketingRequest):
+    """
+    Generates human-gated marketing content adhering to strict writing rules.
+    """
+    draft = marketing_engine.create_draft(req.topic, req.platform)
+    return JSONResponse(content=draft)
+
+@app.get("/api/marketing/pending")
+async def list_pending_marketing():
+    """Lists queued marketing drafts awaiting publication."""
+    drafts = marketing_engine.list_pending_drafts()
+    return JSONResponse(content={"drafts": drafts})
 
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket):
     """
-    WebSocket endpoint for streaming responses to UI.
-    RAM Impact: Moderate per connection, but scalable for local single-user use.
+    Real-time streaming WebSocket endpoint for UI updates.
     """
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_text()
             payload = json.loads(data)
-            
             raw_query = payload.get("query", "")
             
             state: YordState = {
@@ -110,15 +156,19 @@ async def websocket_stream(websocket: WebSocket):
             await websocket.send_json({"event": "routing", "status": "completed", "type": state["query_type"]})
             
             if state["query_type"] == "triage":
-                await websocket.send_json({"event": "triage", "status": "started"})
                 state = generate_triage_questions(state)
                 await websocket.send_json({
                     "event": "triage_questions",
                     "questions": state["triage_questions"]
                 })
             else:
-                # Placeholder for actual engine execution (LangGraph)
-                await websocket.send_json({"event": "execution", "status": "simulated", "message": f"Processing as {state['query_type']}..."})
-                
+                await websocket.send_json({"event": "graph_execution", "status": "started"})
+                final_state = YORD_GRAPH.invoke(state)
+                await websocket.send_json({
+                    "event": "graph_execution",
+                    "status": "completed",
+                    "synthesized_text": final_state.get("synthesized_text", ""),
+                    "contradiction_score": final_state.get("contradiction_score", 0.0)
+                })
     except WebSocketDisconnect:
         pass

@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+YORD Command-Line Interface (CLI).
+Provides direct terminal access to YORD research query execution, document ingestion,
+marketing content generation, and system health status.
+"""
+
+import sys
+import os
+import argparse
+import requests
+import json
+
+BASE_URL = "http://localhost:8000"
+
+def check_server():
+    try:
+        r = requests.get(f"{BASE_URL}/health", timeout=2)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+def cmd_health(args):
+    try:
+        r = requests.get(f"{BASE_URL}/health")
+        print("\n--- YORD SYSTEM HEALTH & HARDWARE METRICS ---")
+        print(json.dumps(r.json(), indent=2))
+    except Exception as e:
+        print(f"Error: Could not connect to backend server at {BASE_URL}. Ensure uvicorn server is running.")
+        sys.exit(1)
+
+def cmd_query(args):
+    print(f"\n[YORD AI] Processing Research Query: '{args.text}'...")
+    try:
+        payload = {"query": args.text, "export_pdf": args.pdf}
+        r = requests.post(f"{BASE_URL}/api/query", json=payload)
+        res = r.json()
+        print("\n--- SYNTHESIZED RESEARCH OUTPUT ---")
+        print(res.get("synthesized_text", "No synthesis generated."))
+        print(f"\n[Metrics] Contradiction Score: {res.get('contradiction_score', 0.0)} | Token Count: {res.get('context_token_count', 0)}")
+        if res.get("pdf_path"):
+            print(f"[PDF Export] Saved to: {res['pdf_path']}")
+    except Exception as e:
+        print(f"Error executing query: {e}")
+
+def cmd_ingest(args):
+    file_path = os.path.abspath(args.file)
+    if not os.path.exists(file_path):
+        print(f"Error: File not found: {file_path}")
+        sys.exit(1)
+        
+    print(f"[YORD Ingestion] Ingesting and indexing document: '{file_path}'...")
+    try:
+        with open(file_path, "rb") as f:
+            r = requests.post(f"{BASE_URL}/api/upload", files={"file": f})
+        res = r.json()
+        print(f"\n[Success] Ingested '{res['filename']}' -> {res['chunks_indexed']} semantic chunks indexed in Qdrant.")
+    except Exception as e:
+        print(f"Error ingesting file: {e}")
+
+def cmd_marketing(args):
+    print(f"\n[YORD Cyborg Marketing] Drafting content for topic: '{args.topic}'...")
+    try:
+        payload = {"topic": args.topic, "platform": args.platform}
+        r = requests.post(f"{BASE_URL}/api/marketing/draft", json=payload)
+        res = r.json()
+        print("\n--- GENERATED DRAFT (PENDING HUMAN APPROVAL) ---")
+        print(f"Draft ID: {res['draft_id']}")
+        print(f"Platform: {res['platform']}\n")
+        print(res['content'])
+        print(f"\nSaved to approval queue: {res['saved_path']}")
+    except Exception as e:
+        print(f"Error generating marketing content: {e}")
+
+def main():
+    parser = argparse.ArgumentParser(description="YORD Local AI Harness CLI")
+    subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
+
+    # Health command
+    subparsers.add_parser("health", help="Check server health & RAM limits")
+
+    # Query command
+    query_parser = subparsers.add_parser("query", help="Execute research query")
+    query_parser.add_argument("text", type=str, help="Research question or topic")
+    query_parser.add_argument("--pdf", action="store_true", help="Export output as PDF report")
+
+    # Ingest command
+    ingest_parser = subparsers.add_parser("ingest", help="Ingest document file into vector database")
+    ingest_parser.add_argument("file", type=str, help="Path to PDF, TXT, or Markdown file")
+
+    # Marketing command
+    mkt_parser = subparsers.add_parser("marketing", help="Draft marketing content adhering to strict rules")
+    mkt_parser.add_argument("topic", type=str, help="Topic for marketing content")
+    mkt_parser.add_argument("--platform", type=str, default="LinkedIn", help="Target platform (default: LinkedIn)")
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    if args.command == "health":
+        cmd_health(args)
+    elif args.command == "query":
+        cmd_query(args)
+    elif args.command == "ingest":
+        cmd_ingest(args)
+    elif args.command == "marketing":
+        cmd_marketing(args)
+
+if __name__ == "__main__":
+    main()
