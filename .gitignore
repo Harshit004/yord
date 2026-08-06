@@ -5,6 +5,10 @@
 target/
 *.log
 
+# Root formatting scripts
+/*.py
+!backend/src/
+
 # System files
 .DS_Store
 *.tmp
