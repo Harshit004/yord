@@ -2,6 +2,7 @@ import asyncio
 import os
 import uuid
 import json
+import psutil
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
@@ -50,9 +51,20 @@ async def startup_event():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint returning dynamic hardware constraints."""
+    """Health check endpoint returning dynamic hardware and physical RAM constraints."""
+    mem = psutil.virtual_memory()
+    used_gb = round(mem.used / (1024**3), 2)
+    total_gb = round(mem.total / (1024**3), 2)
+    percent = mem.percent
+
     return JSONResponse(content={
         "status": "ok",
+        "ram": {
+            "used_gb": used_gb,
+            "total_gb": total_gb,
+            "percent": percent,
+            "display": f"RAM: {used_gb} GB / {total_gb} GB ({percent}% - {'Normal' if percent < 75 else 'Warning'})"
+        },
         "hardware": SYSTEM_CONFIG
     })
 
@@ -73,7 +85,7 @@ async def process_query(req: QueryRequest):
             "query_id": str(uuid.uuid4()),
             "raw_query": req.query,
             "query_type": "distill",
-            "synthesized_text": f"### Skill Installation Result\n\n- **Status:** {install_res['status'].upper()}\n- **Skill Name:** {install_res['skill_name']}\n- **Path:** {install_res['path']}",
+            "synthesized_text": f"### Skill Installation Result\n\n✨ **New Skill Registered:** `{install_res['skill_name']}`\n- **Status:** {install_res['status'].upper()}\n- **Path:** {install_res['path']}",
             "contradiction_score": 0.0,
             "pdf_artifacts": SESSION_PDF_REGISTRY[session_id]
         })
@@ -156,7 +168,7 @@ async def upload_document(file: UploadFile = File(...)):
 @app.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket):
     """
-    Real-time streaming WebSocket endpoint for UI updates.
+    Real-time streaming WebSocket endpoint for token-by-token UI updates.
     """
     await websocket.accept()
     try:
@@ -201,10 +213,23 @@ async def websocket_stream(websocket: WebSocket):
             else:
                 await websocket.send_json({"event": "graph_execution", "status": "started"})
                 final_state = YORD_GRAPH.invoke(state)
+                full_text = final_state.get("synthesized_text", "")
+                
+                # Token-by-token streaming chunk simulation over WebSocket
+                words = full_text.split()
+                chunk_size = 5
+                for i in range(0, len(words), chunk_size):
+                    chunk = " ".join(words[i:i+chunk_size]) + " "
+                    await websocket.send_json({
+                        "event": "token_chunk",
+                        "chunk": chunk
+                    })
+                    await asyncio.sleep(0.02)
+                
                 await websocket.send_json({
                     "event": "graph_execution",
                     "status": "completed",
-                    "synthesized_text": final_state.get("synthesized_text", ""),
+                    "synthesized_text": full_text,
                     "contradiction_score": final_state.get("contradiction_score", 0.0),
                     "pdf_artifacts": SESSION_PDF_REGISTRY[session_id]
                 })

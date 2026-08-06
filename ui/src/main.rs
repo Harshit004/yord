@@ -35,10 +35,16 @@ script_mod! {
                             align: {y: 0.5}
 
                             Label {
+                                width: Fill
                                 text: "Archive & History"
                                 draw_text.color: #00A8FF
                                 draw_text.text_style.font_size: 14.0
                             }
+                        }
+
+                        btn_ingest_doc := Button {
+                            width: Fill
+                            text: "📁 + Ingest Document (PDF/MD)"
                         }
 
                         View {
@@ -175,7 +181,7 @@ script_mod! {
                         }
 
                         Label { text: "Critic Evaluation: OK (0.0 contradiction)" draw_text.color: #00E676 }
-                        Label { text: "Memory Guardian: < 150MB RAM (Normal)" draw_text.color: #888888 }
+                        ram_status_label := Label { text: "RAM Usage: 3.8 GB / 8.0 GB (47.5% - Safe)" draw_text.color: #00E676 }
                     }
                 }
             }
@@ -198,7 +204,7 @@ impl App {
 
 impl MatchEvent for App {
     fn handle_startup(&mut self, _cx: &mut Cx) {
-        log!("YORD UI main window loaded with PDF Artifact Manager.");
+        log!("YORD UI main window loaded with Ingest Document Button & RAM Telemetry.");
     }
 }
 
