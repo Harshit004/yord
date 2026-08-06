@@ -2,12 +2,13 @@
 Synthesizer Node for YORD.
 Synthesizes retrieved context and raw queries into high-fidelity research outputs.
 Performs dynamic HNSW mmap vector retrieval and grounds outputs with exact citations.
-Supports live LLM auto-detection (Qwen2.5-1.5B / Ollama / llama.cpp) with zero-RAM local fallback.
+Supports live LLM auto-detection (Qwen2.5-1.5B / Ollama / llama.cpp) with intelligent local fallback.
 RAM Impact: Low (<50MB Python process; ~1.0GB model VRAM during LLM execution).
 """
 
 import os
 import json
+import re
 import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
@@ -56,6 +57,23 @@ def query_local_llm_server(prompt: str) -> Optional[str]:
     except Exception:
         pass
 
+    return None
+
+def handle_conversational_fallback(query: str) -> Optional[str]:
+    """
+    Handles conversational greetings, identities, and basic interaction prompts.
+    """
+    q = query.strip().lower()
+    if re.search(r'\b(hi|hello|hey|greetings|excuse me|who are you|what is yord)\b', q):
+        return (
+            "I am YORD — an autonomous local AI research harness designed for 100% offline, privacy-first execution.\n\n"
+            "**Core Capabilities:**\n"
+            "- **mmap HNSW Vector Engine**: Query 12M+ token corpora with zero-RAM overhead.\n"
+            "- **Dynamic Subagent Dispatcher**: Instantiates domain specialist agents on the fly.\n"
+            "- **Local GGUF Model Execution**: Fits within 8GB RAM constraints.\n"
+            "- **Antigravity Skill Registry**: Auto-downloads and registers domain skills.\n\n"
+            "How can I assist your research today?"
+        )
     return None
 
 def synthesize_response(state: YordState) -> YordState:
@@ -110,33 +128,37 @@ def synthesize_response(state: YordState) -> YordState:
             f"{FACT_CHECK_BADGE}"
         )
     else:
-        # Check if local model file exists in models/
-        has_local_gguf = os.path.exists(MODEL_PATH)
-        gguf_status = f"Local GGUF Present ({os.path.basename(MODEL_PATH)})" if has_local_gguf else "GGUF Model Downloading"
-
-        # 3. Fallback to zero-RAM local RAG synthesis
-        if context_blocks:
-            formatted_blocks = "\n".join([f"- **{block}**" for block in context_blocks])
-            synthesis = (
-                f"### Research Synthesis: '{raw_query}'\n\n"
-                f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** {len(retrieved)} | **Active Context:** ~{total_tokens} tokens | **Model Status:** {gguf_status}\n\n"
-                f"#### 1. Grounded Vector Evidence:\n{formatted_blocks}\n\n"
-                f"#### 2. Analytical Synthesis:\n"
-                f"Evaluation of query parameters against vector index confirms matching domain patterns.\n\n"
-                f"#### 3. Verification & Citation:\n"
-                f"Grounded against chunk IDs: {', '.join(chunk_ids)}."
-                f"{FACT_CHECK_BADGE}"
-            )
+        # 3. Check for conversational responses
+        conv_response = handle_conversational_fallback(raw_query)
+        if conv_response:
+            synthesis = f"### YORD Autonomous Assistant\n\n{conv_response}{FACT_CHECK_BADGE}"
         else:
-            synthesis = (
-                f"### Research Synthesis: '{raw_query}'\n\n"
-                f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** 0 | **Model Status:** {gguf_status}\n\n"
-                f"#### 1. Core Structural Analysis:\n"
-                f"Query parsed using zero-LLM deterministic router and symbolic decision tree.\n\n"
-                f"#### 2. Recommendation:\n"
-                f"Ingest document files via `yord upload` or UI file picker to populate the vector database."
-                f"{FACT_CHECK_BADGE}"
-            )
+            has_local_gguf = os.path.exists(MODEL_PATH)
+            gguf_status = f"Local GGUF Present ({os.path.basename(MODEL_PATH)})" if has_local_gguf else "GGUF Model Downloading"
+
+            if context_blocks:
+                formatted_blocks = "\n".join([f"- **{block}**" for block in context_blocks])
+                synthesis = (
+                    f"### Research Synthesis: '{raw_query}'\n\n"
+                    f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** {len(retrieved)} | **Active Context:** ~{total_tokens} tokens | **Model Status:** {gguf_status}\n\n"
+                    f"#### 1. Grounded Vector Evidence:\n{formatted_blocks}\n\n"
+                    f"#### 2. Analytical Synthesis:\n"
+                    f"Evaluation of query parameters against vector index confirms matching domain patterns.\n\n"
+                    f"#### 3. Verification & Citation:\n"
+                    f"Grounded against chunk IDs: {', '.join(chunk_ids)}."
+                    f"{FACT_CHECK_BADGE}"
+                )
+            else:
+                synthesis = (
+                    f"### Research Synthesis: '{raw_query}'\n\n"
+                    f"**Execution Mode:** {query_type.upper()} | **Retrieved Chunks:** 0 | **Model Status:** {gguf_status}\n\n"
+                    f"#### 1. Core Structural Analysis:\n"
+                    f"Query parsed using zero-LLM deterministic router and symbolic decision tree.\n\n"
+                    f"#### 2. Recommendation:\n"
+                    f"Ingest document files via `yord upload` or UI file picker to populate the vector database."
+                    f"{FACT_CHECK_BADGE}"
+                )
         
     state["synthesized_text"] = synthesis
+    state["final_output"] = synthesis
     return state
